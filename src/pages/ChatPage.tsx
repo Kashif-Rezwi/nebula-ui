@@ -1,18 +1,14 @@
-import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { ChatArea } from '../components/ChatArea';
 
 export function ChatPage() {
-  const [conversationId, setConversationId] = useState<string>('1');
-
-  const handleNewChat = () => {
-    setConversationId(Date.now().toString());
-  };
+  const { conversationId } = useParams<{ conversationId: string }>();
 
   return (
     <div className="flex h-screen">
-      <Sidebar onNewChat={handleNewChat} />
-      <ChatArea key={conversationId} />
+      <Sidebar currentConversationId={conversationId} />
+      <ChatArea key={conversationId} conversationId={conversationId} />
     </div>
   );
 }

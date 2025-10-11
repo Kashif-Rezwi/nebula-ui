@@ -1,24 +1,82 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { conversationsApi, type Conversation } from '../lib/conversations';
 
 interface SidebarProps {
-  onNewChat: () => void;
+  currentConversationId?: string;
+  onConversationCreated?: () => void;
 }
 
-export function Sidebar({ onNewChat }: SidebarProps) {
+export function Sidebar({ currentConversationId, onConversationCreated }: SidebarProps) {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
   
   // Get user from localStorage
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
 
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  const loadConversations = async () => {
+    try {
+      setLoading(true);
+      const data = await conversationsApi.getConversations();
+      setConversations(data);
+    } catch (error) {
+      console.error('Failed to load conversations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNewChat = async () => {
+    try {
+      setCreating(true);
+      const newConversation = await conversationsApi.createConversation('New Chat');
+      
+      // Reload conversations list
+      await loadConversations();
+      
+      // Navigate to the new conversation
+      navigate(`/chat/${newConversation.id}`);
+      
+      onConversationCreated?.();
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteConversation = async (conversationId: string) => {
+    if (!confirm('Are you sure you want to delete this conversation?')) {
+      return;
+    }
+  
+    try {
+      await conversationsApi.deleteConversation(conversationId);
+      
+      // Reload conversations list
+      await loadConversations();
+      
+      // If we deleted the current conversation, navigate to /chat
+      if (conversationId === currentConversationId) {
+        navigate('/chat');
+      }
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+    }
+  };
+
   const handleLogout = () => {
-    // Clear localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
-    // Redirect to login
     navigate('/login');
   };
 
@@ -32,10 +90,11 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       {/* New Chat Button */}
       <div className="p-3">
         <button 
-          onClick={onNewChat}
-          className="w-full bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors"
+          onClick={handleNewChat}
+          disabled={creating}
+          className="w-full bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          + New chat
+          {creating ? 'Creating...' : '+ New chat'}
         </button>
       </div>
 
@@ -44,17 +103,47 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         <div className="text-xs font-semibold text-foreground/50 mb-2 px-3">
           Recents
         </div>
-        <div className="space-y-1">
-          <div className="px-3 py-2 text-sm rounded-lg hover:bg-[#262626] cursor-pointer transition-colors">
-            Untitled
+
+        {loading ? (
+          <div className="px-3 py-2 text-sm text-foreground/50">
+            Loading...
           </div>
-          <div className="px-3 py-2 text-sm rounded-lg hover:bg-[#262626] cursor-pointer transition-colors">
-            React project help
+        ) : conversations.length === 0 ? (
+          <div className="px-3 py-2 text-sm text-foreground/50">
+            No conversations yet
           </div>
-          <div className="px-3 py-2 text-sm rounded-lg hover:bg-[#262626] cursor-pointer transition-colors">
-            TypeScript questions
+        ) : (
+          <div className="space-y-1">
+            {conversations.map((conv) => (
+              <div
+                key={conv.id}
+                className={`group flex items-center gap-2 px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors ${currentConversationId === conv.id
+                    ? 'bg-[#262626] text-foreground'
+                    : 'hover:bg-[#262626] text-foreground/80'
+                  }`}
+              >
+                <div
+                  className="flex-1 truncate"
+                  onClick={() => navigate(`/chat/${conv.id}`)}
+                >
+                  {conv.title || 'Untitled'}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteConversation(conv.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#333333] rounded transition-opacity"
+                  title="Delete conversation"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
 
       {/* User Profile */}
@@ -66,7 +155,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-sm font-medium overflow-hidden flex-shrink-0">
             {user?.email?.charAt(0).toUpperCase() || 'U'}
           </div>
-          <div className="flex-1 text-left">
+          <div className="flex-1 text-left min-w-0">
             <div className="text-sm font-medium truncate">
               {user?.email?.split('@')[0] || 'User'}
             </div>

@@ -18,6 +18,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/chat/:conversationId"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/" element={<Navigate to="/chat" replace />} />
       </Routes>
     </BrowserRouter>
