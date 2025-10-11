@@ -1,19 +1,26 @@
-import { useState } from 'react';
-import { Sidebar } from './components/Sidebar';
-import { ChatArea } from './components/ChatArea';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ChatPage } from './pages/ChatPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
-  const [conversationId, setConversationId] = useState<string>('1');
-
-  const handleNewChat = () => {
-    setConversationId(Date.now().toString());
-  };
-
   return (
-    <div className="flex h-screen">
-      <Sidebar onNewChat={handleNewChat} />
-      <ChatArea key={conversationId} />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<Navigate to="/chat" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
