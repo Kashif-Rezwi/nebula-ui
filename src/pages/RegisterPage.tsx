@@ -25,7 +25,7 @@ export function RegisterPage() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-[#1a1a1a] border border-border rounded-lg p-8">
+        <div className="bg-[#1a1a1a] border border-border rounded-lg p-8 animate-fade-in">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Error Message */}
             {error && (
@@ -85,11 +85,11 @@ export function RegisterPage() {
 
             {/* Submit Button */}
             <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift"
             >
-              {isLoading ? 'Creating account...' : 'Create account'}
+                {isLoading ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '../lib/auth';
 import { ROUTES } from '../constants';
 import { storage } from '../utils';
+import { toast } from '../utils/toast';
 import type { LoginCredentials, RegisterCredentials, User } from '../types';
 
 export function useAuth() {
@@ -19,10 +20,13 @@ export function useAuth() {
       storage.setToken(response.accessToken);
       storage.setUser(response.user);
       
+      toast.success('Welcome back!');
       navigate(ROUTES.CHAT);
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
@@ -38,10 +42,13 @@ export function useAuth() {
       storage.setToken(response.accessToken);
       storage.setUser(response.user);
       
+      toast.success('Account created successfully!');
       navigate(ROUTES.CHAT);
     } catch (err: any) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
@@ -50,6 +57,7 @@ export function useAuth() {
 
   const logout = useCallback(() => {
     storage.clearAuth();
+    toast.info('Logged out successfully');
     navigate(ROUTES.LOGIN);
   }, [navigate]);
 
