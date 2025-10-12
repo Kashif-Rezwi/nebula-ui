@@ -7,4 +7,14 @@ export default defineConfig({
   server: {
     port: parseInt(process.env.VITE_CLIENT_PORT || '3000'),
   },
+  build: {
+    // Ensure proper module resolution for Vercel
+    rollupOptions: {
+      external: [],
+    },
+  },
+  optimizeDeps: {
+    // Force include rollup dependencies
+    include: ['rollup'],
+  },
 })
