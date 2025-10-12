@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { conversationsApi } from '../lib/conversations';
 import { ROUTES, MESSAGES } from '../constants';
+import { toast } from '../utils/toast';
 import type { Conversation, ConversationWithMessages } from '../types';
 
 export function useConversations() {
@@ -17,6 +18,7 @@ export function useConversations() {
       setConversations(data);
     } catch (error) {
       console.error('Failed to load conversations:', error);
+      toast.error('Failed to load conversations');
     } finally {
       setLoading(false);
     }
@@ -31,6 +33,7 @@ export function useConversations() {
       return newConversation;
     } catch (error) {
       console.error('Failed to create conversation:', error);
+      toast.error('Failed to create conversation');
       throw error;
     } finally {
       setCreating(false);
@@ -49,8 +52,11 @@ export function useConversations() {
       if (conversationId === currentConversationId) {
         navigate(ROUTES.CHAT);
       }
+      
+      toast.success('Conversation deleted');
     } catch (error) {
       console.error('Failed to delete conversation:', error);
+      toast.error('Failed to delete conversation');
       throw error;
     }
   }, [navigate, loadConversations]);
@@ -60,6 +66,7 @@ export function useConversations() {
       return await conversationsApi.getConversation(conversationId);
     } catch (error) {
       console.error('Failed to load conversation:', error);
+      toast.error('Failed to load conversation');
       return null;
     }
   }, []);

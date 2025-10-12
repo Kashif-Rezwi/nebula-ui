@@ -3,6 +3,11 @@ import ReactMarkdown from 'react-markdown';
 import { conversationsApi } from '../lib/conversations';
 import { streamChatResponse } from '../lib/streaming';
 import type { Message } from '../types';
+import { MessageSkeleton, Skeleton } from './Skeleton';
+import { format } from '../utils';
+import { useAuth } from '../hooks/useAuth';
+import { MessageActions } from './MessageActions';
+import { ScrollToBottom } from './ScrollToBottom';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -16,11 +21,34 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { getUser } = useAuth();
+  const user = getUser();
 
-  const scrollToBottom = () => {
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const element = e.currentTarget;
+    const isScrolledUp = element.scrollHeight - element.scrollTop - element.clientHeight > 100;
+    setShowScrollButton(isScrolledUp);
+  };
+  
+  const scrollToBottomSmooth = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const scrollToBottom = () => {
+    // Only auto-scroll if user is near the bottom (within 150px)
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+      
+      if (isNearBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages, isStreaming, streamingContent]);
@@ -98,8 +126,19 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
   if (loading) {
     return (
-      <main className="flex-1 flex items-center justify-center">
-        <div className="text-foreground/60">Loading conversation...</div>
+      <main className="flex-1 flex flex-col relative">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-4 py-8">
+            <MessageSkeleton />
+            <MessageSkeleton />
+            <MessageSkeleton />
+          </div>
+        </div>
+        <div className="p-4 border-t border-border">
+          <div className="max-w-3xl mx-auto">
+            <Skeleton className="h-12 w-full rounded-lg" />
+          </div>
+        </div>
       </main>
     );
   }
@@ -107,75 +146,161 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   return (
     <main className="flex-1 flex flex-col">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto"
+      >
         {messages.length === 0 && !isStreaming ? (
-          /* Empty State */
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-3xl mb-4">✨ Welcome back!</h2>
-              <p className="text-foreground/60">
-                {conversationId 
-                  ? 'Start chatting in this conversation'
-                  : 'Create a new conversation to get started'
-                }
-              </p>
+          /* Empty State with Suggestions */
+          <div className="h-full flex items-center justify-center px-4">
+            <div className="max-w-2xl w-full">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-semibold mb-2">✨ Welcome back!</h2>
+                <p className="text-foreground/60 text-lg">
+                  How can I help you today?
+                </p>
+              </div>
+
+              {/* Suggestion Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button
+                  onClick={() => conversationId && setMessage("Explain a complex topic in simple terms")}
+                  className="text-left p-4 rounded-xl bg-[#1a1a1a] border border-border hover:border-primary/50 transition-all hover:bg-[#202020] group"
+                >
+                  <div className="text-sm font-medium mb-1 group-hover:text-primary transition-colors">
+                    💡 Explain concepts
+                  </div>
+                  <div className="text-xs text-foreground/60">
+                    Break down complex topics into simple explanations
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => conversationId && setMessage("Help me brainstorm ideas for")}
+                  className="text-left p-4 rounded-xl bg-[#1a1a1a] border border-border hover:border-primary/50 transition-all hover:bg-[#202020] group"
+                >
+                  <div className="text-sm font-medium mb-1 group-hover:text-primary transition-colors">
+                    🎨 Brainstorm ideas
+                  </div>
+                  <div className="text-xs text-foreground/60">
+                    Generate creative ideas and solutions
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => conversationId && setMessage("Write code to")}
+                  className="text-left p-4 rounded-xl bg-[#1a1a1a] border border-border hover:border-primary/50 transition-all hover:bg-[#202020] group"
+                >
+                  <div className="text-sm font-medium mb-1 group-hover:text-primary transition-colors">
+                    💻 Write code
+                  </div>
+                  <div className="text-xs text-foreground/60">
+                    Help with programming and debugging
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => conversationId && setMessage("Analyze and summarize")}
+                  className="text-left p-4 rounded-xl bg-[#1a1a1a] border border-border hover:border-primary/50 transition-all hover:bg-[#202020] group"
+                >
+                  <div className="text-sm font-medium mb-1 group-hover:text-primary transition-colors">
+                    📊 Analyze data
+                  </div>
+                  <div className="text-xs text-foreground/60">
+                    Break down and summarize information
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         ) : (
-          /* Messages List */
-          <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+          /* Messages List - Single Column */
+          <div className="max-w-3xl mx-auto px-4">
+            <div className="flex flex-col">
+              {messages.map((msg, index) => (
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-3 ${msg.role === 'user'
-                      ? 'bg-primary text-white'
-                      : 'bg-[#262626] text-foreground'
-                    }`}
+                  key={msg.id}
+                  className="mt-6 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
                   {msg.role === 'user' ? (
-                    msg.content
+                    /* User Message with Background */
+                    <div>
+                      <div className="relative bg-primary/10 border border-primary/20 rounded-2xl p-4 pl-16 min-h-[56px] flex items-center">
+                        {/* Avatar inside bubble - vertically centered */}
+                        <div className="absolute left-4 top-[12px] w-8 h-8 rounded-full bg-primary flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
+                          {user?.email ? format.getInitialFromEmail(user.email) : 'U'}
+                        </div>
+                        
+                        {/* Content with proper spacing */}
+                        <div className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                          {msg.content}
+                        </div>
+                      </div>
+                      
+                      {/* Timestamp below user message */}
+                      <div className="text-xs text-foreground/40 mt-1 text-right" title={format.formatFullDateTime(msg.createdAt)}>
+                        {format.formatRelativeTime(msg.createdAt)}
+                      </div>
+                    </div>
                   ) : (
-                    <div className="prose prose-invert prose-sm max-w-none">
-                      <ReactMarkdown>
-                        {msg.content}
-                      </ReactMarkdown>
+                    /* AI Message without Background */
+                    <div className="group text-[15px] text-[#e8e8e8]">
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+
+                      {/* Timestamp below AI message */}
+                      <div className="text-xs text-foreground/40 mt-1" title={format.formatFullDateTime(msg.createdAt)}>
+                        {format.formatRelativeTime(msg.createdAt)}
+                      </div>
+                      
+                      {/* Action buttons at bottom */}
+                      <MessageActions content={msg.content} />
                     </div>
                   )}
                 </div>
-              </div>
-            ))}
-            
-            {/* Streaming Message */}
-              {isStreaming && streamingContent && (
-                 <div className="flex justify-start">
-                   <div className="max-w-[80%] bg-[#262626] text-foreground rounded-lg px-4 py-3">
-                     <div className="prose prose-invert prose-sm max-w-none">
-                      <ReactMarkdown>
-                        {streamingContent}
-                      </ReactMarkdown>
-                     </div>
-                     <span className="inline-block w-1 h-4 bg-foreground/50 ml-1 animate-pulse"></span>
-                   </div>
-                 </div>
+              ))}
+
+              {/* Streaming Message */}
+              {isStreaming && (
+                <div className="mt-6 animate-fade-in">
+                  {streamingContent ? (
+                    /* AI Streaming Content - No Background */
+                    <div className="group text-[15px] text-[#e8e8e8]">
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>
+                          {streamingContent}
+                        </ReactMarkdown>
+                      </div>
+                      <span className="inline-block w-1 h-4 bg-foreground/50 ml-1 animate-pulse"></span>
+                      
+                      {/* Action buttons for streaming content */}
+                      <MessageActions content={streamingContent} />
+                    </div>
+                  ) : (
+                    /* Typing Indicator */
+                    <div className="flex space-x-2">
+                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                  )}
+                </div>
               )}
 
-            {/* Typing Indicator */}
-            {isStreaming && !streamingContent && (
-              <div className="flex justify-start">
-                <div className="bg-[#262626] rounded-lg px-4 py-3">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Scroll to Bottom Button */}
+            <ScrollToBottom 
+              show={showScrollButton || isStreaming} 
+              onClick={scrollToBottomSmooth}
+              isStreaming={isStreaming}
+            />
           </div>
         )}
       </div>
@@ -200,7 +325,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           />
           <button 
             onClick={handleSend}
-            className="absolute bottom-3 right-3 bg-primary hover:bg-primary/90 text-white p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute bottom-3 right-3 bg-primary hover:bg-primary/90 text-white p-2 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press"
             disabled={!message.trim() || isStreaming || !conversationId}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
