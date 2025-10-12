@@ -8,13 +8,15 @@ export default defineConfig({
     port: parseInt(process.env.VITE_CLIENT_PORT || '3000'),
   },
   build: {
-    // Ensure proper module resolution for Vercel
+    // Use esbuild for better Vercel compatibility
+    target: 'esnext',
+    minify: 'esbuild',
     rollupOptions: {
       external: [],
     },
   },
-  optimizeDeps: {
-    // Force include rollup dependencies
-    include: ['rollup'],
+  esbuild: {
+    // Use esbuild for faster builds
+    target: 'esnext',
   },
 })
