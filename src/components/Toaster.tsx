@@ -4,6 +4,7 @@ export function Toaster() {
   return (
     <SonnerToaster
       position="top-right"
+      closeButton
       toastOptions={{
         style: {
           background: '#262626',

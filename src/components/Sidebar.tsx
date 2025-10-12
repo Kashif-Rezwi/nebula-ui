@@ -122,7 +122,7 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
               {user?.email ? format.getUsernameFromEmail(user.email) : 'User'}
             </div>
             <div className="text-xs text-foreground/50">
-              Pro plan
+              {user?.credits ? `${user.credits.toLocaleString()} credits` : '0 credits'}
             </div>
           </div>
           <svg className="w-4 h-4 text-foreground/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

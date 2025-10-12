@@ -20,7 +20,14 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Nebula</h1>
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="/src/assets/nebula-logo.png" 
+              alt="Nebula Logo" 
+              className="w-10 h-10 object-contain mr-3"
+            />
+            <h1 className="text-3xl font-bold">Nebula</h1>
+          </div>
           <p className="text-foreground/60">Sign in to your account</p>
         </div>
 

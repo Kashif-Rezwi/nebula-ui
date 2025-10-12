@@ -157,7 +157,14 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           <div className="h-full flex items-center justify-center px-4">
             <div className="max-w-2xl w-full">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-semibold mb-2">✨ Welcome back!</h2>
+                <div className="flex items-center justify-center mb-4">
+                  <img 
+                    src="/src/assets/nebula-logo.png" 
+                    alt="Nebula Logo" 
+                    className="w-12 h-12 object-contain mr-3"
+                  />
+                  <h2 className="text-3xl font-semibold">Welcome back!</h2>
+                </div>
                 <p className="text-foreground/60 text-lg">
                   How can I help you today?
                 </p>
