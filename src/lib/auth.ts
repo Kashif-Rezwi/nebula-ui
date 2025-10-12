@@ -1,23 +1,5 @@
 import { api } from './api';
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface RegisterCredentials {
-  email: string;
-  password: string;
-}
-
-interface AuthResponse {
-  accessToken: string;
-  user: {
-    id: string;
-    email: string;
-    credits: number;
-  };
-}
+import type { LoginCredentials, RegisterCredentials, AuthResponse } from '../types';
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {

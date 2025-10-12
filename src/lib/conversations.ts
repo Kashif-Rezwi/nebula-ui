@@ -1,22 +1,5 @@
 import { api } from './api';
-
-export interface Conversation {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  createdAt: string;
-}
-
-export interface ConversationWithMessages extends Conversation {
-  messages: Message[];
-}
+import type { Conversation, ConversationWithMessages } from '../types';
 
 export const conversationsApi = {
   // Get all conversations

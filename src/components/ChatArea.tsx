@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { conversationsApi, type Message } from '../lib/conversations';
+import { conversationsApi } from '../lib/conversations';
 import { streamChatResponse } from '../lib/streaming';
+import type { Message } from '../types';
 
 interface ChatAreaProps {
   conversationId?: string;
