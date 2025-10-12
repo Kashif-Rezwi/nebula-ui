@@ -1,17 +1,14 @@
 import { Navigate } from 'react-router-dom';
-
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
+import { ROUTES } from '../constants';
+import { storage } from '../utils';
+import type { ProtectedRouteProps } from '../types';
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const token = localStorage.getItem('token');
+  const token = storage.getToken();
 
   if (!token) {
-    // Not logged in, redirect to login
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
-  // Logged in, show the protected content
   return <>{children}</>;
 }

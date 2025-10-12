@@ -1,40 +1,18 @@
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { authApi } from '../lib/auth';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { useAuth } from '../hooks/useAuth';
+import type { LoginCredentials } from '../types';
 
 export function LoginPage() {
-  const navigate = useNavigate();
-  const [error, setError] = useState<string>('');
+  const { login, error, isLoading } = useAuth();
   
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>();
+    formState: { errors },
+  } = useForm<LoginCredentials>();
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      setError('');
-      const response = await authApi.login(data);
-      
-      // Save token to localStorage
-      localStorage.setItem('token', response.accessToken);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
-      console.log('Login successful!', response);
-      
-      // Redirect to chat
-      navigate('/chat');
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
-    }
+  const onSubmit = async (data: LoginCredentials) => {
+    await login(data);
   };
 
   return (
@@ -42,12 +20,19 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Nebula</h1>
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="/src/assets/nebula-logo.png" 
+              alt="Nebula Logo" 
+              className="w-10 h-10 object-contain mr-3"
+            />
+            <h1 className="text-3xl font-bold">Nebula</h1>
+          </div>
           <p className="text-foreground/60">Sign in to your account</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-[#1a1a1a] border border-border rounded-lg p-8">
+        <div className="bg-[#1a1a1a] border border-border rounded-lg p-8 animate-fade-in">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Error Message */}
             {error && (
@@ -104,11 +89,11 @@ export function LoginPage() {
 
             {/* Submit Button */}
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift"
             >
-              {isSubmitting ? 'Signing in...' : 'Sign in'}
+                {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
