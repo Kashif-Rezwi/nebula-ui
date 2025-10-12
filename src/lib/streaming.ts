@@ -1,15 +1,11 @@
-import { api } from './api';
-
-export interface StreamChunk {
-  delta: string;
-  isComplete: boolean;
-}
+import { storage } from '../utils';
+import type { StreamChunk } from '../types';
 
 export async function* streamChatResponse(
   conversationId: string,
   message: string
 ): AsyncGenerator<StreamChunk> {
-  const token = localStorage.getItem('token');
+  const token = storage.getToken();
   
   const response = await fetch(
     `${import.meta.env.VITE_API_BASE_URL}/chat/conversations/${conversationId}/messages`,

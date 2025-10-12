@@ -1,40 +1,18 @@
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { authApi } from '../lib/auth';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { useAuth } from '../hooks/useAuth';
+import type { LoginCredentials } from '../types';
 
 export function LoginPage() {
-  const navigate = useNavigate();
-  const [error, setError] = useState<string>('');
+  const { login, error, isLoading } = useAuth();
   
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>();
+    formState: { errors },
+  } = useForm<LoginCredentials>();
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      setError('');
-      const response = await authApi.login(data);
-      
-      // Save token to localStorage
-      localStorage.setItem('token', response.accessToken);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
-      console.log('Login successful!', response);
-      
-      // Redirect to chat
-      navigate('/chat');
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
-    }
+  const onSubmit = async (data: LoginCredentials) => {
+    await login(data);
   };
 
   return (
@@ -105,10 +83,10 @@ export function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isLoading}
               className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
