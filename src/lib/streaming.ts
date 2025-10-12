@@ -1,4 +1,5 @@
 import { storage } from '../utils';
+import { API_CONFIG } from '../constants';
 import type { StreamChunk } from '../types';
 
 export async function* streamChatResponse(
@@ -8,7 +9,7 @@ export async function* streamChatResponse(
   const token = storage.getToken();
   
   const response = await fetch(
-    `${import.meta.env.VITE_API_BASE_URL}/chat/conversations/${conversationId}/messages`,
+    `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
     {
       method: 'POST',
       headers: {
