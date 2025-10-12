@@ -8,6 +8,7 @@ import { format } from '../utils';
 import { useAuth } from '../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
+import { InputArea } from './InputArea';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -20,7 +21,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [streamingContent, setStreamingContent] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { getUser } = useAuth();
   const user = getUser();
 
@@ -227,9 +228,9 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
                   {msg.role === 'user' ? (
                     /* User Message with Background */
                     <div>
-                      <div className="relative bg-primary/10 border border-primary/20 rounded-2xl p-4 pl-16 min-h-[56px] flex items-center">
+                      <div className="relative bg-primary/10 border border-primary/20 rounded-2xl p-4 pl-14 min-h-14 flex items-center">
                         {/* Avatar inside bubble - vertically centered */}
-                        <div className="absolute left-4 top-[12px] w-8 h-8 rounded-full bg-primary flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
+                        <div className="absolute left-3 top-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
                           {user?.email ? format.getInitialFromEmail(user.email) : 'U'}
                         </div>
                         
@@ -306,34 +307,15 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-border">
-        <div className="max-w-3xl mx-auto relative">
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              e.target.style.height = 'auto';
-              e.target.style.height = e.target.scrollHeight + 'px';
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="How can I help you today?"
-            className="w-full bg-[#262626] text-foreground rounded-lg px-4 py-3 pr-12 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none max-h-[200px] overflow-y-auto"
-            rows={1}
-            style={{ minHeight: '48px' }}
-            disabled={!conversationId || isStreaming}
-          />
-          <button 
-            onClick={handleSend}
-            className="absolute bottom-3 right-3 bg-primary hover:bg-primary/90 text-white p-2 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press"
-            disabled={!message.trim() || isStreaming || !conversationId}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      <InputArea
+        message={message}
+        setMessage={setMessage}
+        onSend={handleSend}
+        onKeyDown={handleKeyDown}
+        disabled={!conversationId}
+        isStreaming={isStreaming}
+        textareaRef={textareaRef}
+      />
     </main>
   );
 }
