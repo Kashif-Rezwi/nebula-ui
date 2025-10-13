@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { format } from '../utils';
 import { SidebarSkeleton } from './Skeleton';
+import nebulaLogo from '../assets/nebula-logo.png';
 import type { SidebarProps } from '../types';
 
 export function Sidebar({ currentConversationId }: SidebarProps) {
@@ -34,7 +35,7 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
       <div className="p-4 flex items-center gap-3 border-b border-border">
         <div className="w-8 h-8 flex items-center justify-center">
           <img 
-            src="/src/assets/nebula-logo.png" 
+            src={nebulaLogo} 
             alt="Nebula Logo" 
             className="w-8 h-8 object-contain"
           />

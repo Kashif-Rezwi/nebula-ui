@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../hooks/useAuth';
 import type { RegisterCredentials } from '../types';
+import nebulaLogo from '../assets/nebula-logo.png';
 
 export function RegisterPage() {
   const { register: registerUser, error, isLoading } = useAuth();
@@ -22,7 +23,7 @@ export function RegisterPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src="/src/assets/nebula-logo.png" 
+              src={nebulaLogo} 
               alt="Nebula Logo" 
               className="w-10 h-10 object-contain mr-3"
             />
