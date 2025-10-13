@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
+import nebulaLogo from '../assets/nebula-logo.png';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -159,7 +160,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center mb-4">
                   <img 
-                    src="/src/assets/nebula-logo.png" 
+                    src={nebulaLogo} 
                     alt="Nebula Logo" 
                     className="w-12 h-12 object-contain mr-3"
                   />
