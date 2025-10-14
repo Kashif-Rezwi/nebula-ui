@@ -96,9 +96,11 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   };
 
   const handleSend = async () => {
+    console.log('handleSend', message, conversationId, status);
     if (!message.trim() || !conversationId || status !== 'ready') return;
 
     const userMessage = message;
+    console.log('userMessage', userMessage);
     setMessage('');
     
     // Reset textarea height
