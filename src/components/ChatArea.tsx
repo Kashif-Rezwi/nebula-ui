@@ -9,8 +9,9 @@ import { useAuth } from '../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
-import { createChatTransport } from '../lib/chatTransport';
 import nebulaLogo from '../assets/nebula-logo.png';
+import { DefaultChatTransport } from 'ai';
+import { API_CONFIG } from '../constants';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -27,17 +28,10 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize useChat
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-    setMessages,
-  } = useChat<UIMessage>({
-    transport: conversationId 
-      ? createChatTransport(conversationId)
-      : undefined,
+  const { messages, sendMessage, status, error, setMessages } = useChat({
+    transport: new DefaultChatTransport({
+      api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
+    }),
   });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -256,7 +250,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           /* Messages List - Single Column */
           <div className="max-w-3xl mx-auto px-4">
             <div className="flex flex-col">
-              {messages.map((msg, index) => (
+              {(messages as UIMessage[]).map((msg, index) => (
                 <div
                   key={msg.id}
                   className="mt-6 animate-fade-in"
