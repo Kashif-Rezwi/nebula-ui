@@ -9,10 +9,19 @@ export function createChatTransport(conversationId: string) {
     // return the chat transport
     return new DefaultChatTransport({
         api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${storage.getToken()}`,
+        prepareSendMessagesRequest: ({ messages, trigger, messageId }) => {
+            return {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${storage.getToken()}`,
+                },
+                credentials: 'include',
+                body: {
+                    messages,
+                    trigger,
+                    messageId,
+                },
+            };
         },
-        credentials: 'include',
     });
 }
