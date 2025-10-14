@@ -10,8 +10,7 @@ import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
 import nebulaLogo from '../assets/nebula-logo.png';
-import { DefaultChatTransport } from 'ai';
-import { API_CONFIG } from '../constants';
+import { createChatTransport } from '../lib/createChatTransport';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -29,9 +28,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: new DefaultChatTransport({
-      api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
-    }),
+    transport: conversationId ? createChatTransport(conversationId) : undefined,
   });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
