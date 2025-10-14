@@ -49,18 +49,5 @@ export const conversationsApi = {
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
-  },
-
-  // Send a message (non-streaming version for fallback)
-  sendMessage: async (conversationId: string, messages: Message[]): Promise<Message[]> => {
-    try {
-      const response = await api.post(
-        `/chat/conversations/${conversationId}/messages`,
-        { messages }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error(getErrorMessage(error));
-    }
-  },
+  }
 };
