@@ -1,3 +1,13 @@
+// AI SDK v5 UIMessage type with typed metadata
+import type { UIMessage as BaseUIMessage } from 'ai';
+
+export interface UIMessage extends BaseUIMessage {
+  metadata?: {
+    createdAt?: string;
+    [key: string]: unknown;
+  };
+}
+
 // Auth Types
 export interface User {
     id: string;

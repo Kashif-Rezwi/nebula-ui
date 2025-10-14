@@ -4,7 +4,7 @@ import { authApi } from '../lib/auth';
 import { ROUTES } from '../constants';
 import { storage } from '../utils';
 import { toast } from '../utils/toast';
-import type { LoginCredentials, RegisterCredentials, User } from '../types';
+import type { LoginCredentials, RegisterCredentials } from '../types';
 
 // Query Keys
 export const authKeys = {

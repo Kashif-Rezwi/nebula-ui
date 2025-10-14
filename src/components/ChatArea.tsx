@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
+import { useChat } from '@ai-sdk/react';
+import type { UIMessage } from '../types';
 import ReactMarkdown from 'react-markdown';
-import { useConversation } from '../hooks/useConversations';
-import { streamChatResponse } from '../lib/streaming';
+import { conversationsApi } from '../lib/conversations';
 import { MessageSkeleton, Skeleton } from './Skeleton';
 import { format } from '../utils';
 import { useAuth } from '../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
+import { createChatTransport } from '../lib/chatTransport';
 import nebulaLogo from '../assets/nebula-logo.png';
 
 interface ChatAreaProps {
@@ -16,8 +18,7 @@ interface ChatAreaProps {
 
 export function ChatArea({ conversationId }: ChatAreaProps) {
   const [message, setMessage] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingContent, setStreamingContent] = useState('');
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { getUser } = useAuth();
@@ -26,9 +27,18 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Use the new Tanstack Query hook
-  const { data: conversation, isLoading, refetch } = useConversation(conversationId);
-  const messages = conversation?.messages || [];
+  // Initialize useChat
+  const {
+    messages,
+    sendMessage,
+    status,
+    error,
+    setMessages,
+  } = useChat<UIMessage>({
+    transport: conversationId 
+      ? createChatTransport(conversationId)
+      : undefined,
+  });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
@@ -41,7 +51,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   };
 
   const scrollToBottom = () => {
-    // Only auto-scroll if user is near the bottom (within 150px)
     if (messagesContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
@@ -54,11 +63,49 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isStreaming, streamingContent]);
+  }, [messages, status]);
 
+  // Load conversation messages when conversationId changes
+  useEffect(() => {
+    if (conversationId) {
+      loadConversation();
+    } else {
+      setMessages([]);
+    }
+  }, [conversationId]);
+
+  const loadConversation = async () => {
+    if (!conversationId) return;
+    
+    try {
+      setLoading(true);
+      const conversation = await conversationsApi.getConversation(conversationId);
+      
+      // Convert old message format to UIMessage format
+      const uiMessages: UIMessage[] = (conversation.messages || []).map(msg => ({
+        id: msg.id,
+        role: msg.role as 'user' | 'assistant' | 'system',
+        parts: [
+          {
+            type: 'text',
+            text: msg.content,
+          },
+        ],
+        metadata: {
+          createdAt: msg.createdAt,
+        },
+      }));
+      
+      setMessages(uiMessages);
+    } catch (error) {
+      console.error('Failed to load conversation:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSend = async () => {
-    if (!message.trim() || !conversationId) return;
+    if (!message.trim() || !conversationId || status !== 'ready') return;
 
     const userMessage = message;
     setMessage('');
@@ -69,23 +116,18 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     }
 
     try {
-      setIsStreaming(true);
-      setStreamingContent('');
-
-      // Stream the response
-      for await (const chunk of streamChatResponse(conversationId, userMessage)) {
-        if (chunk.isComplete) {
-          setIsStreaming(false);
-          // Refetch conversation to get the saved messages
-          await refetch();
-        } else {
-          setStreamingContent((prev) => prev + chunk.delta);
-        }
-      }
+      // Send message using AI SDK v5
+      sendMessage({
+        role: 'user',
+        parts: [
+          {
+            type: 'text',
+            text: userMessage,
+          },
+        ],
+      });
     } catch (error) {
       console.error('Failed to send message:', error);
-      setIsStreaming(false);
-      setStreamingContent('');
     }
   };
 
@@ -96,7 +138,15 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     }
   };
 
-  if (isLoading) {
+  // Extract text from message parts
+  const getMessageText = (msg: UIMessage): string => {
+    return msg.parts
+      .filter(part => part.type === 'text')
+      .map(part => part.text)
+      .join('');
+  };
+
+  if (loading) {
     return (
       <main className="flex-1 flex flex-col relative">
         <div className="flex-1 overflow-y-auto">
@@ -117,13 +167,22 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
   return (
     <main className="flex-1 flex flex-col">
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-500/10 border-b border-red-500/50 px-4 py-3">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-red-500 text-sm">Error: {error.message}</p>
+          </div>
+        </div>
+      )}
+
       {/* Messages Area */}
       <div 
         ref={messagesContainerRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto"
       >
-        {messages.length === 0 && !isStreaming ? (
+        {messages.length === 0 && status === 'ready' ? (
           /* Empty State with Suggestions */
           <div className="h-full flex items-center justify-center px-4">
             <div className="max-w-2xl w-full">
@@ -214,60 +273,51 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
                         
                         {/* Content with proper spacing */}
                         <div className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
-                          {msg.content}
+                          {getMessageText(msg)}
                         </div>
                       </div>
                       
                       {/* Timestamp below user message */}
-                      <div className="text-xs text-foreground/40 mt-1 text-right" title={format.formatFullDateTime(msg.createdAt)}>
-                        {format.formatRelativeTime(msg.createdAt)}
-                      </div>
+                      {msg.metadata?.createdAt && (
+                        <div className="text-xs text-foreground/40 mt-1 text-right" 
+                            title={format.formatFullDateTime(msg.metadata.createdAt)}>
+                          {format.formatRelativeTime(msg.metadata.createdAt)}
+                        </div>
+                      )}
+
                     </div>
                   ) : (
                     /* AI Message without Background */
                     <div className="group text-[15px] text-[#e8e8e8]">
                       <div className="prose prose-invert prose-sm max-w-none">
                         <ReactMarkdown>
-                          {msg.content}
+                          {getMessageText(msg)}
                         </ReactMarkdown>
                       </div>
 
                       {/* Timestamp below AI message */}
-                      <div className="text-xs text-foreground/40 mt-1" title={format.formatFullDateTime(msg.createdAt)}>
-                        {format.formatRelativeTime(msg.createdAt)}
-                      </div>
+                      {msg.metadata?.createdAt && (
+                        <div className="text-xs text-foreground/40 mt-1" 
+                            title={format.formatFullDateTime(msg.metadata.createdAt)}>
+                          {format.formatRelativeTime(msg.metadata.createdAt)}
+                        </div>
+                      )}
                       
                       {/* Action buttons at bottom */}
-                      <MessageActions content={msg.content} />
+                      <MessageActions content={getMessageText(msg)} />
                     </div>
                   )}
                 </div>
               ))}
 
-              {/* Streaming Message */}
-              {isStreaming && (
+              {/* Streaming Indicator */}
+              {status === 'streaming' && (
                 <div className="mt-6 animate-fade-in">
-                  {streamingContent ? (
-                    /* AI Streaming Content - No Background */
-                    <div className="group text-[15px] text-[#e8e8e8]">
-                      <div className="prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown>
-                          {streamingContent}
-                        </ReactMarkdown>
-                      </div>
-                      <span className="inline-block w-1 h-4 bg-foreground/50 ml-1 animate-pulse"></span>
-                      
-                      {/* Action buttons for streaming content */}
-                      <MessageActions content={streamingContent} />
-                    </div>
-                  ) : (
-                    /* Typing Indicator */
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                  )}
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
                 </div>
               )}
 
@@ -276,9 +326,9 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
             {/* Scroll to Bottom Button */}
             <ScrollToBottom 
-              show={showScrollButton || isStreaming} 
+              show={showScrollButton || status === 'streaming'} 
               onClick={scrollToBottomSmooth}
-              isStreaming={isStreaming}
+              isStreaming={status === 'streaming'}
             />
           </div>
         )}
@@ -290,8 +340,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         setMessage={setMessage}
         onSend={handleSend}
         onKeyDown={handleKeyDown}
-        disabled={!conversationId}
-        isStreaming={isStreaming}
+        disabled={!conversationId || status !== 'ready'}
+        isStreaming={status === 'streaming'}
         textareaRef={textareaRef}
       />
     </main>
