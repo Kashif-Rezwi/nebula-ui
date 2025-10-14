@@ -1,27 +1,66 @@
-import { api } from './api';
-import type { Conversation, ConversationWithMessages } from '../types';
+import { api, getErrorMessage } from './api';
+import type { Conversation, ConversationWithMessages, Message } from '../types';
 
 export const conversationsApi = {
-  // Get all conversations
+  // Get all conversations for the current user
   getConversations: async (): Promise<Conversation[]> => {
-    const response = await api.get('/chat/conversations');
-    return response.data;
+    try {
+      const response = await api.get('/chat/conversations');
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   // Get single conversation with messages
   getConversation: async (id: string): Promise<ConversationWithMessages> => {
-    const response = await api.get(`/chat/conversations/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/chat/conversations/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   // Create new conversation
-  createConversation: async (title?: string): Promise<Conversation> => {
-    const response = await api.post('/chat/conversations', { title });
-    return response.data;
+  createConversation: async (title: string = 'New Chat'): Promise<Conversation> => {
+    try {
+      const response = await api.post('/chat/conversations', { title });
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  // Update conversation (e.g., title)
+  updateConversation: async (id: string, data: Partial<Conversation>): Promise<Conversation> => {
+    try {
+      const response = await api.patch(`/chat/conversations/${id}`, data);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   // Delete conversation
   deleteConversation: async (id: string): Promise<void> => {
-    await api.delete(`/chat/conversations/${id}`);
+    try {
+      await api.delete(`/chat/conversations/${id}`);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  // Send a message (non-streaming version for fallback)
+  sendMessage: async (conversationId: string, message: string): Promise<Message> => {
+    try {
+      const response = await api.post(
+        `/chat/conversations/${conversationId}/messages`,
+        { message }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 };
