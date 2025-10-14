@@ -1,5 +1,5 @@
 import { api, getErrorMessage } from './api';
-import type { Conversation, ConversationWithMessages, Message } from '../types';
+import type { Conversation, ConversationWithMessages } from '../types';
 
 export const conversationsApi = {
   // Get all conversations for the current user
