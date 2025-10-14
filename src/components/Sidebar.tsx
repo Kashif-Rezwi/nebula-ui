@@ -1,4 +1,4 @@
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, useLogout } from '../hooks/useAuth';
 import { useConversations } from '../hooks/useConversations';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -10,7 +10,11 @@ import type { SidebarProps } from '../types';
 export function Sidebar({ currentConversationId }: SidebarProps) {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
-  const { getUser, logout } = useAuth();
+  
+  // Use the new auth hooks
+  const { user } = useAuth();
+  const { mutate: logout } = useLogout();
+  
   const { 
     conversations, 
     loading, 
@@ -18,8 +22,6 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
     createConversation, 
     deleteConversation 
   } = useConversations();
-  
-  const user = getUser();
 
   const handleNewChat = async () => {
     await createConversation();
@@ -27,6 +29,11 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
 
   const handleDeleteConversation = async (conversationId: string) => {
     await deleteConversation(conversationId, currentConversationId);
+  };
+
+  const handleLogout = () => {
+    setShowMenu(false);
+    logout();
   };
 
   return (
@@ -135,7 +142,7 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
         {showMenu && (
           <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#262626] border border-border rounded-lg overflow-hidden animate-scale-in">
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="w-full px-4 py-2 text-left text-sm hover:bg-[#333333] transition-smooth"
             >
               Logout
@@ -145,4 +152,4 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
       </div>
     </aside>
   );
-}
+};

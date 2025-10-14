@@ -1,19 +1,21 @@
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../hooks/useAuth';
+import { useRegister } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 import type { RegisterCredentials } from '../types';
 import nebulaLogo from '../assets/nebula-logo.png';
+import { VALIDATION, MESSAGES } from '../constants';
 
 export function RegisterPage() {
-  const { register: registerUser, error, isLoading } = useAuth();
+  const { mutate: register, isPending, error } = useRegister();
   
   const {
-    register,
+    register: formRegister,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterCredentials>();
 
-  const onSubmit = async (data: RegisterCredentials) => {
-    await registerUser(data);
+  const onSubmit = (data: RegisterCredentials) => {
+    register(data);
   };
 
   return (
@@ -35,10 +37,10 @@ export function RegisterPage() {
         {/* Form Card */}
         <div className="bg-[#1a1a1a] border border-border rounded-lg p-8 animate-fade-in">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Error Message */}
+            {/* Error Message from server */}
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
-                <p className="text-red-500 text-sm">{error}</p>
+                <p className="text-red-500 text-sm">{error.message}</p>
               </div>
             )}
 
@@ -50,15 +52,16 @@ export function RegisterPage() {
               <input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
-                {...register('email', {
-                  required: 'Email is required',
+                placeholder={MESSAGES.PLACEHOLDERS.EMAIL}
+                {...formRegister('email', {
+                  required: VALIDATION.EMAIL.REQUIRED_MESSAGE,
                   pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address',
+                    value: VALIDATION.EMAIL.PATTERN,
+                    message: VALIDATION.EMAIL.INVALID_MESSAGE,
                   },
                 })}
                 className="w-full bg-[#262626] text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+                disabled={isPending}
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
@@ -73,31 +76,32 @@ export function RegisterPage() {
               <input
                 id="password"
                 type="password"
-                placeholder="••••••••"
-                {...register('password', {
-                  required: 'Password is required',
+                placeholder={MESSAGES.PLACEHOLDERS.PASSWORD}
+                {...formRegister('password', {
+                  required: VALIDATION.PASSWORD.REQUIRED_MESSAGE,
                   minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters',
+                    value: VALIDATION.PASSWORD.MIN_LENGTH,
+                    message: VALIDATION.PASSWORD.MIN_LENGTH_MESSAGE,
                   },
                 })}
                 className="w-full bg-[#262626] text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+                disabled={isPending}
               />
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
               )}
               <p className="text-xs text-foreground/50 mt-1">
-                Must be at least 6 characters
+                Must be at least {VALIDATION.PASSWORD.MIN_LENGTH} characters
               </p>
             </div>
 
             {/* Submit Button */}
             <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift"
+              type="submit"
+              disabled={isPending}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift"
             >
-                {isLoading ? 'Creating account...' : 'Create account'}
+              {isPending ? MESSAGES.BUTTONS.CREATING_ACCOUNT : MESSAGES.BUTTONS.CREATE_ACCOUNT}
             </button>
           </form>
 
@@ -105,9 +109,9 @@ export function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-foreground/60">
               Already have an account?{' '}
-              <a href="/login" className="text-primary hover:underline">
+              <Link to="/login" className="text-primary hover:underline">
                 Sign in
-              </a>
+              </Link>
             </p>
           </div>
         </div>

@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "ai": "^5.0.68",
+    "@tanstack/react-query": "^5.90.3",
+    "@tanstack/react-query-devtools": "^5.90.2",
+    "ai": "^5.0.70",
     "axios": "^1.12.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

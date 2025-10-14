@@ -1,18 +1,40 @@
-import { api } from './api';
-import type { LoginCredentials, RegisterCredentials, AuthResponse } from '../types';
+import { api, getErrorMessage } from './api';
+import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from '../types';
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', credentials);
-    return response.data;
+    try {
+      const response = await api.post('/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', credentials);
-    return response.data;
+    try {
+      const response = await api.post('/auth/register', credentials);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
+  },
+
+  getProfile: async (): Promise<User> => {
+    try {
+      const response = await api.get('/auth/profile');
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   logout: async (): Promise<void> => {
-    await api.post('/auth/logout');
+    // Optional: Call backend logout endpoint if it exists
+    // await api.post('/auth/logout');
+    
+    // Clear local storage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   },
-};
+};  

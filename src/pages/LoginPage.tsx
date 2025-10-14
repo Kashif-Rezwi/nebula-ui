@@ -1,10 +1,12 @@
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../hooks/useAuth';
+import { useLogin } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 import type { LoginCredentials } from '../types';
 import nebulaLogo from '../assets/nebula-logo.png';
+import { VALIDATION, MESSAGES } from '../constants';
 
 export function LoginPage() {
-  const { login, error, isLoading } = useAuth();
+  const { mutate: login, isPending, error } = useLogin();
   
   const {
     register,
@@ -12,8 +14,8 @@ export function LoginPage() {
     formState: { errors },
   } = useForm<LoginCredentials>();
 
-  const onSubmit = async (data: LoginCredentials) => {
-    await login(data);
+  const onSubmit = (data: LoginCredentials) => {
+    login(data);
   };
 
   return (
@@ -35,10 +37,10 @@ export function LoginPage() {
         {/* Form Card */}
         <div className="bg-[#1a1a1a] border border-border rounded-lg p-8 animate-fade-in">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Error Message */}
+            {/* Error Message from server */}
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3">
-                <p className="text-red-500 text-sm">{error}</p>
+                <p className="text-red-500 text-sm">{error.message}</p>
               </div>
             )}
 
@@ -50,15 +52,16 @@ export function LoginPage() {
               <input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={MESSAGES.PLACEHOLDERS.EMAIL}
                 {...register('email', {
-                  required: 'Email is required',
+                  required: VALIDATION.EMAIL.REQUIRED_MESSAGE,
                   pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address',
+                    value: VALIDATION.EMAIL.PATTERN,
+                    message: VALIDATION.EMAIL.INVALID_MESSAGE,
                   },
                 })}
                 className="w-full bg-[#262626] text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+                disabled={isPending}
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
@@ -73,15 +76,16 @@ export function LoginPage() {
               <input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={MESSAGES.PLACEHOLDERS.PASSWORD}
                 {...register('password', {
-                  required: 'Password is required',
+                  required: VALIDATION.PASSWORD.REQUIRED_MESSAGE,
                   minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters',
+                    value: VALIDATION.PASSWORD.MIN_LENGTH,
+                    message: VALIDATION.PASSWORD.MIN_LENGTH_MESSAGE,
                   },
                 })}
                 className="w-full bg-[#262626] text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+                disabled={isPending}
               />
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
@@ -90,11 +94,11 @@ export function LoginPage() {
 
             {/* Submit Button */}
             <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift"
+              type="submit"
+              disabled={isPending}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift"
             >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+              {isPending ? MESSAGES.BUTTONS.SIGNING_IN : MESSAGES.BUTTONS.SIGN_IN}
             </button>
           </form>
 
@@ -102,9 +106,9 @@ export function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-sm text-foreground/60">
               Don't have an account?{' '}
-              <a href="/register" className="text-primary hover:underline">
+              <Link to="/register" className="text-primary hover:underline">
                 Sign up
-              </a>
+              </Link>
             </p>
           </div>
         </div>
