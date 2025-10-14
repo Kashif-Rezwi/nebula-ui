@@ -28,7 +28,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: conversationId ? createChatTransport(conversationId) : undefined,
+    transport: createChatTransport(conversationId || ''),
   });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
