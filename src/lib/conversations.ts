@@ -52,11 +52,11 @@ export const conversationsApi = {
   },
 
   // Send a message (non-streaming version for fallback)
-  sendMessage: async (conversationId: string, message: string): Promise<Message> => {
+  sendMessage: async (conversationId: string, messages: Message[]): Promise<Message[]> => {
     try {
       const response = await api.post(
         `/chat/conversations/${conversationId}/messages`,
-        { message }
+        { messages }
       );
       return response.data;
     } catch (error) {
