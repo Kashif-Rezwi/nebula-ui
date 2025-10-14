@@ -1,5 +1,5 @@
 // AI SDK v5 UIMessage type with typed metadata
-import type { UIMessage as BaseUIMessage } from '@ai-sdk/react';
+import type { UIMessage as BaseUIMessage } from 'ai';
 
 export interface UIMessage extends BaseUIMessage {
   metadata?: {
