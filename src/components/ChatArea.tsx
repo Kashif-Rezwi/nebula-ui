@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { conversationsApi } from '../lib/conversations';
+import { useConversation } from '../hooks/useConversations';
 import { streamChatResponse } from '../lib/streaming';
-import type { Message } from '../types';
 import { MessageSkeleton, Skeleton } from './Skeleton';
 import { format } from '../utils';
 import { useAuth } from '../hooks/useAuth';
@@ -17,10 +16,8 @@ interface ChatAreaProps {
 
 export function ChatArea({ conversationId }: ChatAreaProps) {
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
-  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { getUser } = useAuth();
@@ -28,6 +25,10 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Use the new Tanstack Query hook
+  const { data: conversation, isLoading, refetch } = useConversation(conversationId);
+  const messages = conversation?.messages || [];
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
@@ -55,28 +56,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     scrollToBottom();
   }, [messages, isStreaming, streamingContent]);
 
-  // Load conversation messages when conversationId changes
-  useEffect(() => {
-    if (conversationId) {
-      loadConversation();
-    } else {
-      setMessages([]);
-    }
-  }, [conversationId]);
-
-  const loadConversation = async () => {
-    if (!conversationId) return;
-    
-    try {
-      setLoading(true);
-      const conversation = await conversationsApi.getConversation(conversationId);
-      setMessages(conversation.messages || []);
-    } catch (error) {
-      console.error('Failed to load conversation:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSend = async () => {
     if (!message.trim() || !conversationId) return;
@@ -89,15 +68,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
       textareaRef.current.style.height = 'auto';
     }
 
-    // Add user message optimistically
-    const tempUserMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: userMessage,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, tempUserMessage]);
-
     try {
       setIsStreaming(true);
       setStreamingContent('');
@@ -106,8 +76,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
       for await (const chunk of streamChatResponse(conversationId, userMessage)) {
         if (chunk.isComplete) {
           setIsStreaming(false);
-          // Reload conversation to get the saved messages with proper IDs
-          await loadConversation();
+          // Refetch conversation to get the saved messages
+          await refetch();
         } else {
           setStreamingContent((prev) => prev + chunk.delta);
         }
@@ -126,7 +96,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <main className="flex-1 flex flex-col relative">
         <div className="flex-1 overflow-y-auto">

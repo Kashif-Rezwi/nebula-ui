@@ -1,5 +1,5 @@
 import { useAuth, useLogout } from '../hooks/useAuth';
-import { useConversations } from '../hooks/useConversations';
+import { useConversationsManager } from '../hooks/useConversations';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { format } from '../utils';
@@ -11,29 +11,34 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   
-  // Use the new auth hooks
+  // Auth hooks
   const { user } = useAuth();
   const { mutate: logout } = useLogout();
   
+  // Conversations hooks - now using Tanstack Query
   const { 
     conversations, 
     loading, 
     creating, 
     createConversation, 
     deleteConversation 
-  } = useConversations();
+  } = useConversationsManager();
 
-  const handleNewChat = async () => {
-    await createConversation();
+  const handleNewChat = () => {
+    createConversation();
   };
 
-  const handleDeleteConversation = async (conversationId: string) => {
-    await deleteConversation(conversationId, currentConversationId);
+  const handleDeleteConversation = (conversationId: string) => {
+    deleteConversation(conversationId);
   };
 
   const handleLogout = () => {
     setShowMenu(false);
     logout();
+  };
+
+  const handleConversationClick = (conversationId: string) => {
+    navigate(`/chat/${conversationId}`);
   };
 
   return (
@@ -91,13 +96,18 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
                     : 'hover:bg-[#262626] text-foreground/80'
                 }`}
                 style={{ animationDelay: `${index * 0.03}s` }}
+                onClick={() => handleConversationClick(conv.id)}
               >
-                <div
-                  className="flex-1 truncate"
-                  onClick={() => navigate(`/chat/${conv.id}`)}
-                >
+                <div className="flex-1 truncate">
                   {conv.title || 'Untitled'}
                 </div>
+                
+                {/* Show timestamp on hover */}
+                <span className="text-xs text-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {format.formatDate(conv.updatedAt)}
+                </span>
+                
+                {/* Delete button */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -152,4 +162,4 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
       </div>
     </aside>
   );
-};
+}
