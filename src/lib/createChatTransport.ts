@@ -13,10 +13,12 @@ export function createChatTransport(conversationId: string) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
-        credentials: "include",
         prepareSendMessagesRequest: ({ messages, id, trigger }) => {
             console.log("📤 OUTGOING PAYLOAD:", { messages, id, trigger });
-            return { body: { messages, id, trigger } };
+            return { 
+                body: { messages, id, trigger }, 
+                credentials: "include"
+            };
         },
     });
 }

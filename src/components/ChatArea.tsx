@@ -1,16 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from '../types';
 import ReactMarkdown from 'react-markdown';
 import { conversationsApi } from '../lib/conversations';
 import { MessageSkeleton, Skeleton } from './Skeleton';
-import { format } from '../utils';
+import { format, storage } from '../utils';
 import { useAuth } from '../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
 import nebulaLogo from '../assets/nebula-logo.png';
-import { createChatTransport } from '../lib/createChatTransport';
+// import { createChatTransport } from '../lib/createChatTransport';
+import { API_CONFIG } from '../constants';
+import { DefaultChatTransport } from 'ai';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -27,8 +29,26 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  const transport = useMemo(
+    () => new DefaultChatTransport({
+      api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${storage.getToken()}`,
+      },
+      prepareSendMessagesRequest: ({ messages, id, trigger }) => {
+        console.log("📤 OUTGOING PAYLOAD:", { messages, id, trigger });
+        return {
+          body: { messages, id, trigger },
+          credentials: "include"
+        };
+      },
+    }),
+    [conversationId]
+  );
+
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: createChatTransport(conversationId ?? "default"),
+    transport,
   });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
