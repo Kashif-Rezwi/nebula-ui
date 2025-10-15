@@ -1,5 +1,5 @@
 import { api, getErrorMessage } from './api';
-import type { Conversation, ConversationWithMessages, Message } from '../types';
+import type { Conversation, ConversationWithMessages } from '../types';
 
 export const conversationsApi = {
   // Get all conversations for the current user
@@ -49,18 +49,5 @@ export const conversationsApi = {
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
-  },
-
-  // Send a message (non-streaming version for fallback)
-  sendMessage: async (conversationId: string, message: string): Promise<Message> => {
-    try {
-      const response = await api.post(
-        `/chat/conversations/${conversationId}/messages`,
-        { message }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error(getErrorMessage(error));
-    }
-  },
+  }
 };
