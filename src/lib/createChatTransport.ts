@@ -3,21 +3,23 @@ import { API_CONFIG } from "../constants";
 import { storage } from "../utils";
 
 export function createChatTransport(conversationId: string) {
-    const token = storage.getToken();
-
-    console.log("🧠 createChatTransport file LOADED in build:", new Date().toISOString());
+    if (!conversationId) {
+        throw new Error("Conversation ID is required");
+    }
 
     return new DefaultChatTransport({
         api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        headers: () => {
+            const token = storage.getToken();
+            return {
+                "Content-Type": "application/json",
+                ...(token && { Authorization: `Bearer ${token}` }),
+            };
         },
-        prepareSendMessagesRequest: ({ messages, id, trigger }) => {
-            console.log("📤 OUTGOING PAYLOAD:", { messages, id, trigger });
-            return { 
-                body: { messages, id, trigger }, 
-                credentials: "include"
+        credentials: "include",
+        prepareSendMessagesRequest: ({ messages }) => {
+            return {
+                body: { messages }
             };
         },
     });

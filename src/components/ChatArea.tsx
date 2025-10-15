@@ -27,29 +27,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // // ✅ AI SDK 5 way - using DefaultChatTransport with prepareSendMessagesRequest
-  // const { messages, sendMessage, status, error, setMessages } = useChat({
-  //   id: conversationId ?? "default",
-  //   transport: new DefaultChatTransport({
-  //     api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId ?? "default"}/messages`,
-  //     headers: () => ({
-  //       'Content-Type': 'application/json',
-  //       'Authorization': `Bearer ${storage.getToken()}`
-  //     }),
-  //     credentials: 'include',
-  //     prepareSendMessagesRequest: ({ messages, id, trigger }) => {
-  //       console.log('📤 PREPARING REQUEST:', { messages, id, trigger });
-  //       return {
-  //         body: {
-  //           messages,
-  //           id,
-  //           trigger
-  //         }
-  //       };
-  //     }
-  //   })
-  // });
-
   const { messages, sendMessage, status, error, setMessages } = useChat({
     transport: createChatTransport(conversationId ?? "default"),
   })
