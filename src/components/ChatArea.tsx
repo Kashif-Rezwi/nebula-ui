@@ -4,15 +4,12 @@ import type { UIMessage } from '../types';
 import ReactMarkdown from 'react-markdown';
 import { conversationsApi } from '../lib/conversations';
 import { MessageSkeleton, Skeleton } from './Skeleton';
-import { format, storage } from '../utils';
+import { format } from '../utils';
 import { useAuth } from '../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
 import nebulaLogo from '../assets/nebula-logo.png';
-// import { createChatTransport } from '../lib/createChatTransport';
-import { API_CONFIG } from '../constants';
-import { DefaultChatTransport } from 'ai';
 import { createChatTransport } from '../lib/createChatTransport';
 
 interface ChatAreaProps {
