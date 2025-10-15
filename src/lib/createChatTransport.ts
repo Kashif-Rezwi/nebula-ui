@@ -3,10 +3,10 @@ import { DefaultChatTransport } from "ai";
 import { API_CONFIG } from "../constants";
 import { storage } from "../utils";
 
+console.log("🧠 createChatTransport file LOADED in build:", new Date().toISOString());
+
 export function createChatTransport(conversationId: string) {
   const token = storage.getToken();
-
-  console.log("✅ Using custom DefaultChatTransport build at runtime:", new Date().toISOString());
 
   return new DefaultChatTransport({
     api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,

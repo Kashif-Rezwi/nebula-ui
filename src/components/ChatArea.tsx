@@ -16,6 +16,7 @@ interface ChatAreaProps {
   conversationId?: string;
 }
 
+console.log("⚙️ Chat Transport:", typeof createChatTransport);
 export function ChatArea({ conversationId }: ChatAreaProps) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
