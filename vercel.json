@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "rm -rf node_modules package-lock.json && npm ci --legacy-peer-deps",
+  "installCommand": "rm -rf node_modules package-lock.json && npm install --legacy-peer-deps",
   "rewrites": [
     {
       "source": "/(.*)",
