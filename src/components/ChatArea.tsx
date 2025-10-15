@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from '../types';
 import ReactMarkdown from 'react-markdown';
@@ -29,26 +29,27 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const transport = useMemo(
-    () => new DefaultChatTransport({
-      api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${storage.getToken()}`,
-      },
-      prepareSendMessagesRequest: ({ messages, id, trigger }) => {
-        console.log("📤 OUTGOING PAYLOAD:", { messages, id, trigger });
-        return {
-          body: { messages, id, trigger },
-          credentials: "include"
-        };
-      },
-    }),
-    [conversationId]
-  );
-
+  // ✅ AI SDK 5 way - using DefaultChatTransport with prepareSendMessagesRequest
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport,
+    id: conversationId ?? "default",
+    transport: new DefaultChatTransport({
+      api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId ?? "default"}/messages`,
+      headers: () => ({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${storage.getToken()}`
+      }),
+      credentials: 'include',
+      prepareSendMessagesRequest: ({ messages, id, trigger }) => {
+        console.log('📤 PREPARING REQUEST:', { messages, id, trigger });
+        return {
+          body: {
+            messages,
+            id,
+            trigger
+          }
+        };
+      }
+    })
   });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
