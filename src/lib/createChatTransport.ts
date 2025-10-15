@@ -6,11 +6,7 @@ import { storage } from "../utils";
 export function createChatTransport(conversationId: string) {
   const token = storage.getToken();
 
-  console.log("🔧 Creating transport for conversation:", conversationId);
-  console.log(
-    "🔧 API URL:",
-    `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`
-  );
+  console.log("✅ Using custom DefaultChatTransport build at runtime:", new Date().toISOString());
 
   return new DefaultChatTransport({
     api: `${API_CONFIG.BASE_URL}/chat/conversations/${conversationId}/messages`,
@@ -21,27 +17,15 @@ export function createChatTransport(conversationId: string) {
     },
     credentials: "include",
 
-    // ✅ ensure outgoing payload is always { messages: [...] }
-    // regardless of local vs production behavior
-    prepareSendMessagesRequest: ({ messages, id, trigger }) => {
-      let normalized = messages;
-
-      // Safety: if SDK or environment accidentally sends single message
-      if (!Array.isArray(normalized)) {
-        normalized = [
-          typeof normalized === "string"
-            ? { role: "user", id: "1", parts: [{ type: "text", text: normalized }] }
-            : normalized,
-        ];
-      }
-
-      return {
-        body: {
-          messages: normalized,
-          id,
-          trigger,
-        },
-      };
-    },
+    prepareSendMessagesRequest: (payload) => {
+        console.log("✅ prepareSendMessagesRequest payload:", payload);
+        return {
+          body: {
+            messages: payload.messages,
+            id: payload.id,
+            trigger: payload.trigger,
+          },
+        };
+      },
   });
 }
