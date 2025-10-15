@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from '../types';
 import ReactMarkdown from 'react-markdown';
@@ -16,7 +16,6 @@ interface ChatAreaProps {
   conversationId?: string;
 }
 
-console.log("⚙️ Chat Transport:", typeof createChatTransport);
 export function ChatArea({ conversationId }: ChatAreaProps) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,8 +27,15 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  // 🔥 CREATE TRANSPORT ONCE, MEMOIZED
+  const transport = useMemo(
+    () => createChatTransport(conversationId ?? "default"),
+    [conversationId]  // Only recreate when conversationId changes
+  );
+
+  // 🔥 PASS THE MEMOIZED TRANSPORT
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: createChatTransport(conversationId ?? "default"),
+    transport
   });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
