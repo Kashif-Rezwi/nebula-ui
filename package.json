@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "ai": "^5.0.71",
-    "@ai-sdk/react": "^2.0.72",
+    "@ai-sdk/react": "^2.0.71",
     "@tanstack/react-query": "^5.90.3",
     "@tanstack/react-query-devtools": "^5.90.2",
     "axios": "^1.12.2",
