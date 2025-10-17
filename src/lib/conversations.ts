@@ -23,7 +23,7 @@ export const conversationsApi = {
   },
 
   // Create new conversation
-  createConversation: async (title: string = 'New Chat'): Promise<Conversation> => {
+  createConversation: async (title: string = 'Untitled'): Promise<Conversation> => {
     try {
       const response = await api.post('/chat/conversations', { title });
       return response.data;
