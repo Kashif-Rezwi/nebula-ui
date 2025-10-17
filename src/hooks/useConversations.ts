@@ -52,7 +52,7 @@ export function useCreateConversation() {
       // Optimistically update to the new value
       const tempConversation: Conversation = {
         id: `temp-${Date.now()}`,
-        title: title || 'New Chat',
+        title: title || 'Untitled',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
