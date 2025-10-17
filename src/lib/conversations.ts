@@ -49,5 +49,18 @@ export const conversationsApi = {
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
-  }
+  },
+
+  // Generate title for conversation
+  generateTitle: async (id: string, message: string): Promise<string> => {
+    try {
+      const response = await api.post(`/chat/conversations/${id}/generate-title`, {
+        message,
+      });
+      return response.data.title;
+    } catch (error) {
+      console.error('Failed to generate title:', error);
+      throw new Error(getErrorMessage(error));
+    }
+  },
 };
