@@ -11,6 +11,7 @@ import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
 import nebulaLogo from '../assets/nebula-logo.png';
 import { createChatTransport } from '../lib/createChatTransport';
+import { useGenerateTitle } from '../hooks/useConversations';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -23,9 +24,10 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { getUser } = useAuth();
   const user = getUser();
-
+  
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const { mutateAsync: generateTitle } = useGenerateTitle();
 
   const { messages, sendMessage, status, error, setMessages } = useChat({
     transport: createChatTransport(conversationId ?? "default"),
@@ -100,7 +102,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     if (!message.trim() || !conversationId || status !== 'ready') return;
 
     const userMessage = message;
-    console.log('userMessage', userMessage);
     setMessage('');
     
     // Reset textarea height
@@ -119,6 +120,11 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           },
         ],
       });
+
+      // Generate title for conversation if it's the first message
+      if (messages.length === 0) {
+        await generateTitle({ conversationId: conversationId ?? "default", message: userMessage });
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
     }
