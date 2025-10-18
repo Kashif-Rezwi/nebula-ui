@@ -147,7 +147,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
   if (loading) {
     return (
-      <main className="flex-1 flex flex-col relative">
+      <main className="w-full h-full flex flex-col relative">
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4 py-8">
             <MessageSkeleton />
@@ -165,7 +165,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   }
 
   return (
-    <main className="flex-1 flex flex-col">
+    <main className="w-full h-full flex flex-col">
       {/* Error Display */}
       {error && (
         <div className="bg-red-500/10 border-b border-red-500/50 px-4 py-3">

@@ -63,4 +63,17 @@ export const conversationsApi = {
       throw new Error(getErrorMessage(error));
     }
   },
+
+  // Update system prompt for conversation
+  updateSystemPrompt: async (id: string, systemPrompt: string): Promise<Conversation> => {
+    try {
+      const response = await api.put(`/chat/conversations/${id}/system-prompt`, {
+        systemPrompt,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update system prompt:', error);
+      throw new Error(getErrorMessage(error));
+    }
+  },
 };

@@ -42,7 +42,7 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
   };
 
   return (
-    <aside className="w-64 bg-[#1a1a1a] border-r border-border flex flex-col">
+    <aside className="fixed left-4 top-4 bottom-4 w-56 bg-[#1a1a1a] border border-border rounded-2xl flex flex-col z-10">
       {/* Header */}
       <div className="p-4 flex items-center gap-3 border-b border-border">
         <div className="w-8 h-8 flex items-center justify-center">
