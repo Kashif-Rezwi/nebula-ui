@@ -34,6 +34,7 @@ export interface User {
   export interface Conversation {
     id: string;
     title: string;
+    systemPrompt?: string;
     createdAt: string;
     updatedAt: string;
   }
