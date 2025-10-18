@@ -1,6 +1,6 @@
-# Nebula UI
+# better DEV UI
 
-Frontend for Nebula AI Chat Platform.
+Frontend for better DEV AI Platform.
 
 ## Tech Stack
 

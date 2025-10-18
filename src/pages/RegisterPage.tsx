@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { useRegister } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import type { RegisterCredentials } from '../types';
-import nebulaLogo from '../assets/nebula-logo.png';
+import betterDevLogo from '../assets/dev-logo-light.png';
 import { VALIDATION, MESSAGES } from '../constants';
 
 export function RegisterPage() {
@@ -25,11 +25,11 @@ export function RegisterPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src={nebulaLogo} 
-              alt="Nebula Logo" 
+              src={betterDevLogo} 
+              alt="better DEV Logo" 
               className="w-10 h-10 object-contain mr-3"
             />
-            <h1 className="text-3xl font-bold">Nebula</h1>
+            <h1 className="text-3xl font-brand">better DEV</h1>
           </div>
           <p className="text-foreground/60">Create your account</p>
         </div>

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { format } from '../utils';
 import { SidebarSkeleton } from './Skeleton';
-import nebulaLogo from '../assets/nebula-logo.png';
+import betterDevLogo from '../assets/dev-logo-light.png';
 import type { SidebarProps } from '../types';
 
 export function Sidebar({ currentConversationId }: SidebarProps) {
@@ -42,21 +42,24 @@ export function Sidebar({ currentConversationId }: SidebarProps) {
   };
 
   return (
-    <aside className="fixed left-4 top-4 bottom-4 w-56 bg-[#1a1a1a] border border-border rounded-2xl flex flex-col z-10">
+    <aside className="fixed left-4 top-4 bottom-4 w-56 bg-[#1a1a1a] rounded-2xl flex flex-col z-10">
       {/* Header */}
-      <div className="p-4 flex items-center gap-3 border-b border-border">
+      <div className="p-4 flex items-center gap-3">
         <div className="w-8 h-8 flex items-center justify-center">
           <img 
-            src={nebulaLogo} 
-            alt="Nebula Logo" 
+            src={betterDevLogo} 
+            alt="better DEV Logo" 
             className="w-8 h-8 object-contain"
           />
         </div>
-        <h1 className="text-xl font-semibold">Nebula</h1>
+        <h1 className="text-xl font-brand">better DEV</h1>
       </div>
 
       {/* New Chat Button */}
       <div className="p-3">
+        <div className="text-xs font-medium text-foreground/50 mb-2 px-3">
+          Features
+        </div>
         <button 
           onClick={handleNewChat}
           disabled={creating}

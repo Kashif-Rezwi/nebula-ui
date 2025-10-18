@@ -32,7 +32,7 @@ interface InputAreaProps {
                   e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
                 }}
                 onKeyDown={onKeyDown}
-                placeholder="Reply to Nebula..."
+                placeholder="Reply to better DEV..."
                 className="w-full bg-transparent text-[15px] text-white focus:outline-none resize-none overflow-y-auto placeholder:text-[#666666] leading-6"
                 rows={1}
                 style={{ minHeight: '24px', maxHeight: '200px' }}
