@@ -9,7 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ScrollToBottom } from './ScrollToBottom';
 import { InputArea } from './InputArea';
-import nebulaLogo from '../assets/nebula-logo.png';
+import betterDevLogo from '../assets/dev-logo-light.png';
 import { createChatTransport } from '../lib/createChatTransport';
 import { useGenerateTitle } from '../hooks/useConversations';
 
@@ -188,8 +188,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center mb-4">
                   <img 
-                    src={nebulaLogo} 
-                    alt="Nebula Logo" 
+                    src={betterDevLogo} 
+                    alt="better DEV Logo" 
                     className="w-12 h-12 object-contain mr-3"
                   />
                   <h2 className="text-3xl font-semibold">Welcome back!</h2>

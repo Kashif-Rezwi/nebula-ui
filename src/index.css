@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Victor+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -177,4 +178,11 @@ body {
 /* Button press effect */
 .btn-press:active {
   transform: scale(0.98);
+}
+
+/* Brand font for better DEV */
+.font-brand {
+  font-family: 'Victor Mono', 'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
