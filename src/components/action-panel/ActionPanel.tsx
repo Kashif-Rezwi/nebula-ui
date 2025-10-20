@@ -15,7 +15,7 @@ export function ActionPanel({ currentConversationId }: SidebarProps) {
     const { user } = useAuth();
     const { mutate: logout } = useLogout();
     
-    // Conversations hooks - now using Tanstack Query
+    // Conversations hooks
     const { 
       conversations, 
       loading, 
