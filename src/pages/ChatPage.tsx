@@ -1,17 +1,15 @@
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
-import { ActionPanel } from '../components/action-panel/ActionPanel';
+import { ActionsPanel } from '../components/actions-panel/ActionsPanel';
 import { ChatArea } from '../components/ChatArea';
-import { InstructionsPanel } from '../components/InstructionsPanel';
-import { SystemPromptModal } from '../components/SystemPromptModal';
 import { useConversation, useUpdateSystemPrompt } from '../hooks/useConversations';
+import { ActivitiesPanel } from '../components/activities-panel/ActivitiesPanel';
 
 export function ChatPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Fetch conversation data to get system prompt
   const { data: conversation } = useConversation(conversationId);
+  console.log("conversation", {conversation})
   
   // Mutation for updating system prompt
   const { mutate: updateSystemPrompt, isPending: isSaving } = useUpdateSystemPrompt();
@@ -20,17 +18,8 @@ export function ChatPage() {
     if (!conversationId) return;
     
     updateSystemPrompt(
-      { id: conversationId, systemPrompt },
-      {
-        onSuccess: () => {
-          setIsModalOpen(false);
-        },
-      }
+      { id: conversationId, systemPrompt }
     );
-  };
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
   };
 
   return (
@@ -42,22 +31,14 @@ export function ChatPage() {
       />
       
       {/* Left Sidebar - Floating overlay */}
-      <ActionPanel currentConversationId={conversationId} />
+      <ActionsPanel currentConversationId={conversationId} />
       
       {/* Right Sidebar - Floating overlay */}
-      <InstructionsPanel
-        systemPrompt={conversation?.systemPrompt}
-        onEdit={handleOpenModal}
+      <ActivitiesPanel
+        systemPrompt={conversation?.systemPrompt || ""}
         conversationId={conversationId}
-      />
-
-      {/* System Prompt Modal */}
-      <SystemPromptModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveSystemPrompt}
-        initialValue={conversation?.systemPrompt || ''}
-        isSaving={isSaving}
+        onSaveSystemPrompt={handleSaveSystemPrompt}
+        isSavingSystemPrompt={isSaving}
       />
     </div>
   );
