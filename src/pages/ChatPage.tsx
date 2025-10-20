@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
-import { Sidebar } from '../components/Sidebar';
+import { ActionPanel } from '../components/action-panel/ActionPanel';
 import { ChatArea } from '../components/ChatArea';
 import { InstructionsPanel } from '../components/InstructionsPanel';
 import { SystemPromptModal } from '../components/SystemPromptModal';
@@ -42,7 +42,7 @@ export function ChatPage() {
       />
       
       {/* Left Sidebar - Floating overlay */}
-      <Sidebar currentConversationId={conversationId} />
+      <ActionPanel currentConversationId={conversationId} />
       
       {/* Right Sidebar - Floating overlay */}
       <InstructionsPanel
