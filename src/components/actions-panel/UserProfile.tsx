@@ -5,8 +5,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-  } from "@radix-ui/react-dropdown-menu";
-  import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+  } from "../ui/dropdown-menu";
+  import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
   import type { User } from "../../types";
   import { format } from "../../utils";
   import { IoChevronDownCircleOutline, IoLogOutOutline, IoMailOutline } from "react-icons/io5";
@@ -48,7 +48,7 @@ import {
           </DropdownMenuTrigger>
   
           <DropdownMenuContent 
-            className="w-[238px] bg-[#1a1a1a] border border-border rounded-lg p-2" 
+            className="w-[238px] bg-[#1a1a1a] border border-border rounded-lg" 
             align="start"
             side="top"
             sideOffset={8}
@@ -57,7 +57,7 @@ import {
               My Account
             </DropdownMenuLabel>
             
-            <DropdownMenuSeparator className="my-1 bg-border" />
+            <DropdownMenuSeparator className="bg-border" />
             
             <DropdownMenuItem className="flex items-center justify-left gap-3 px-2 py-2 text-sm rounded-md hover:bg-[#262626] cursor-pointer focus:bg-[#262626] outline-none">
                <IoMailOutline className="w-5 h-5 text-foreground/80" />
@@ -65,8 +65,6 @@ import {
                 {user?.email}
                </div>
             </DropdownMenuItem>
-            
-            <DropdownMenuSeparator className="my-1 bg-border" />
             
             <DropdownMenuItem 
               onClick={handleLogout}

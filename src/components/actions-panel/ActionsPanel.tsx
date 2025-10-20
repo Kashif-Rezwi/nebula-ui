@@ -1,14 +1,14 @@
 import { useAuth, useLogout } from '../../hooks/useAuth';
 import { useConversationsManager } from '../../hooks/useConversations';
 import { useNavigate } from 'react-router-dom';
-import type { SidebarProps, User } from '../../types';
+import type { ActionsPanelProps, User } from '../../types';
 import { Header } from './Header';
 import { Features } from './Features';
 import { UserProfile } from './UserProfile';
 import { Recents } from './Recents';
-import { Separator } from '@radix-ui/react-dropdown-menu';
+import { Separator } from '../ui/separator';
 
-export function ActionPanel({ currentConversationId }: SidebarProps) {
+export function ActionsPanel({ currentConversationId }: ActionsPanelProps) {
     const navigate = useNavigate();
     
     // Auth hooks
@@ -44,7 +44,9 @@ export function ActionPanel({ currentConversationId }: SidebarProps) {
       <aside className="fixed left-4 top-4 bottom-4 w-64 bg-[#1a1a1a] rounded-2xl flex flex-col z-10 border border-border overflow-hidden">
         <Header />
 
-        <Separator className='border border-border mx-3'/>
+        <div className='px-4'>
+          <Separator />
+        </div>
   
         <Features
           creating={creating}
