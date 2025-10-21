@@ -18,7 +18,9 @@ interface InputAreaProps {
     textareaRef,
   }: InputAreaProps) {
     return (
-      <div className="px-4 pb-6 pt-4">
+      <div className="relative px-4 py-4">
+        {/* Gradient fade background - always visible */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent h-[16px]"></div>
         <div className="max-w-3xl mx-auto">
           <div className="bg-[#1a1a1a] rounded-3xl border border-[#2a2a2a] shadow-sm">
             {/* Input Field - Top Section */}
