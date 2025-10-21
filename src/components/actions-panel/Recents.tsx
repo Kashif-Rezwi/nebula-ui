@@ -38,7 +38,7 @@ export function Recents({
                             No conversations yet
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-2 py-2">
+                        <div className="flex flex-col gap-2 pt-2 pb-[68px]">
                             {conversations.map((conv, index) => (
                                 <div
                                     key={conv.id}

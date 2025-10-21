@@ -21,7 +21,7 @@ import {
       <div className="absolute bottom-0 left-0 right-0 p-2">
          
         {/* Bottom fade overlay - match sidebar bg color */}
-        <div className="h-8 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent pointer-events-none z-10" />
+        <div className="h-4 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/90 to-transparent pointer-events-none z-10" />
            
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="border border-border transition-smooth group outline-none focus:outline-none focus:ring-0">
