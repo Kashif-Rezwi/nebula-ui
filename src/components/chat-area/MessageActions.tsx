@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from '../utils/toast';
+import { toast } from '../../utils/toast';
 
 interface MessageActionsProps {
   content: string;

@@ -1,6 +1,6 @@
 import { CgRemove } from "react-icons/cg";
 import type { Conversation } from "../../types";
-import { SidebarSkeleton } from "../Skeleton";
+import { SidebarSkeleton } from "../common/Skeleton";
 import { format } from "../../utils";
 
 interface RecentsProps {

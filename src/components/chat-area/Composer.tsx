@@ -1,26 +1,34 @@
 interface InputAreaProps {
-    message: string;
-    setMessage: (value: string) => void;
-    onSend: () => void;
-    onKeyDown: (e: React.KeyboardEvent) => void;
-    disabled?: boolean;
-    isStreaming?: boolean;
-    textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-  }
-  
-  export function InputArea({
-    message,
-    setMessage,
-    onSend,
-    onKeyDown,
-    disabled = false,
-    isStreaming = false,
-    textareaRef,
-  }: InputAreaProps) {
-    return (
-      <div className="relative px-4 bt-0 pb-4">
-        <div className="max-w-3xl mx-auto z-10">
-          <div className="bg-[#1a1a1a] rounded-3xl border border-[#2a2a2a] shadow-sm">
+  message: string;
+  setMessage: (value: string) => void;
+  onSend: () => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  disabled?: boolean;
+  isStreaming?: boolean;
+  loading?: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+}
+
+export function Composer({
+  loading = false,
+  message,
+  setMessage,
+  onSend,
+  onKeyDown,
+  disabled = false,
+  isStreaming = false,
+  textareaRef,
+}: InputAreaProps) {
+  return (
+    <div className="relative px-4 bt-0 pb-4">
+      <div className="max-w-3xl mx-auto z-10">
+        <div className="bg-[#1a1a1a] rounded-2xl border border-[#2a2a2a] shadow-sm">
+          {/* Wrapper with opacity transition - maintains dimensions */}
+          <div
+            className={`transition-opacity duration-300 ${
+              loading ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+            }`}
+          >
             {/* Input Field - Top Section */}
             <div className="p-4">
               <textarea
@@ -36,7 +44,7 @@ interface InputAreaProps {
                 className="w-full bg-transparent text-[15px] text-white focus:outline-none resize-none overflow-y-auto placeholder:text-[#666666] leading-6"
                 rows={1}
                 style={{ minHeight: '24px', maxHeight: '200px' }}
-                disabled={disabled || isStreaming}
+                disabled={disabled || isStreaming || loading}
               />
             </div>
 
@@ -93,7 +101,7 @@ interface InputAreaProps {
                   <button
                     onClick={onSend}
                     className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
-                    disabled={!message.trim() || isStreaming || disabled}
+                    disabled={!message.trim() || isStreaming || disabled || loading}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -103,7 +111,19 @@ interface InputAreaProps {
               </div>
             </div>
           </div>
+
+          {/* Loading overlay/skeleton */}
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex gap-2">
+                <div className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
