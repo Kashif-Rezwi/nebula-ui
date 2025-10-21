@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
-import { ROUTES } from '../constants';
-import { storage } from '../utils';
-import type { ProtectedRouteProps } from '../types';
+import { ROUTES } from '../../constants';
+import { storage } from '../../utils';
+import type { ProtectedRouteProps } from '../../types';
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const token = storage.getToken();
