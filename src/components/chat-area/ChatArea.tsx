@@ -51,62 +51,73 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     setMessage(text);
   };
 
-  // Determine what to show
-  const renderContent = () => {
-    // No conversation selected → Show EmptyState
-    if (!conversationId) {
-      return <EmptyState onSuggestionClick={handleSuggestionClick} />;
-    }
-
-    // Conversation selected + Loading → Show skeleton
-    if (loading) {
-      return <ChatSkeleton />;
-    }
-
-    // Conversation selected + No messages → Show greeting
-    if (messages.length === 0) {
-      return <Greeting />;
-    }
-
-    // Conversation selected + Has messages → Show messages
-    return (
-      <>
-        <MessageList messages={messages as UIMessage[]} isStreaming={status === 'streaming'} />
-        <div ref={messagesEndRef} />
-      </>
-    );
-  };
+  const hasConversation = Boolean(conversationId);
+  const hasMessages = messages.length > 0;
+  const isLoading = loading;
 
   return (
     <main className="w-full h-full flex flex-col">
       {/* Messages Area */}
       <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto">
-        {renderContent()}
+        {!hasConversation && (
+          <EmptyState onSuggestionClick={handleSuggestionClick} />
+        )}
+
+        {hasConversation && isLoading && (
+          <ChatSkeleton />
+        )}
+
+        {hasConversation && !isLoading && !hasMessages && (
+          <div className="h-full flex items-center justify-center px-4">
+            <div className="flex flex-col items-center gap-8 w-full max-w-3xl">
+              <Greeting />
+              <div className="w-full">
+                <Composer
+                  loading={false}
+                  message={message}
+                  setMessage={setMessage}
+                  onSend={handleSend}
+                  onKeyDown={handleKeyDown}
+                  disabled={status !== 'ready'}
+                  isStreaming={status === 'streaming'}
+                  textareaRef={textareaRef}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {hasConversation && !isLoading && hasMessages && (
+          <>
+            <MessageList messages={messages as UIMessage[]} isStreaming={status === 'streaming'} />
+            <div ref={messagesEndRef} />
+          </>
+        )}
       </div>
 
-      {/* Input Area */}
-      <div className="fixed bottom-0 left-0 right-0">
-        <div className="absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-auto" />
-        
-        {conversationId && !loading && (
+      {/* Fixed Bottom Composer - ONLY when has messages */}
+      {hasConversation && !isLoading && hasMessages && (
+        <div className="fixed bottom-0 left-0 right-0">
+          <div className="absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-auto" />
+          
           <ScrollToBottom
             show={showScrollButton || status === 'streaming'}
             onClick={scrollToBottomSmooth}
             isStreaming={status === 'streaming'}
           />
-        )}
 
-        <Composer
-          loading={loading}
-          message={message}
-          setMessage={setMessage}
-          onSend={handleSend}
-          onKeyDown={handleKeyDown}
-          disabled={!conversationId || status !== 'ready'}
-          isStreaming={status === 'streaming'}
-          textareaRef={textareaRef}
-        />
-      </div>
+          <Composer
+            loading={false}
+            message={message}
+            setMessage={setMessage}
+            onSend={handleSend}
+            onKeyDown={handleKeyDown}
+            disabled={status !== 'ready'}
+            isStreaming={status === 'streaming'}
+            textareaRef={textareaRef}
+          />
+        </div>
+      )}
     </main>
   );
 }
