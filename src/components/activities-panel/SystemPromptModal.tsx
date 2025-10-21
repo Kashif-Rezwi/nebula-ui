@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Dialog, 
   DialogFooter, 
@@ -13,6 +13,7 @@ import { FiEdit2 } from "react-icons/fi";
 import { Button } from '../ui/button';
 import type { SystemPromptModalProps } from '@/types';
 import { Separator } from '../ui/separator';
+import { Textarea } from '../ui/textarea';
 
 export function SystemPromptModal({
   initialInstructions,
@@ -51,12 +52,13 @@ export function SystemPromptModal({
         </DialogHeader>
         
         <div className="flex-1 h-[60vh]">
-          <textarea
+          <Textarea
+            defaultValue={initialInstructions}
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter instructions for this conversation..."
-            className="w-full h-full bg-[#262626] text-foreground rounded-lg p-4 border border-border focus:outline-none resize-none font-mono text-sm"
+            className="w-full h-full bg-[#262626] text-foreground rounded-xl p-4 border border-border resize-none font-mono text-sm"
             maxLength={maxInputLength}
             disabled={isSaving}
             autoFocus
