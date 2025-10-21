@@ -253,12 +253,13 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           </div>
         ) : (
           /* Messages List - Single Column */
-          <div className="max-w-3xl mx-auto px-4">
+          <div className="flex flex-col gap-4 max-w-3xl mx-auto px-4 pt-4 pb-[148px]">
+            <div className="absolute top-0 left-0 right-0 h-[16px] bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-10" />
             <div className="flex flex-col">
               {(messages as UIMessage[]).map((msg, index) => (
                 <div
                   key={msg.id}
-                  className="mt-6 animate-fade-in"
+                  className="animate-fade-in"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
                   {msg.role === 'user' ? (
@@ -311,7 +312,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
               {/* Streaming Indicator */}
               {status === 'streaming' && (
-                <div className="mt-6 animate-fade-in">
+                <div className="animate-fade-in">
                   <div className="flex space-x-2">
                     <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
@@ -322,27 +323,29 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Scroll to Bottom Button */}
-            <ScrollToBottom 
-              show={showScrollButton || status === 'streaming'} 
-              onClick={scrollToBottomSmooth}
-              isStreaming={status === 'streaming'}
-            />
           </div>
         )}
       </div>
 
       {/* Input Area */}
-      <InputArea
-        message={message}
-        setMessage={setMessage}
-        onSend={handleSend}
-        onKeyDown={handleKeyDown}
-        disabled={!conversationId || status !== 'ready'}
-        isStreaming={status === 'streaming'}
-        textareaRef={textareaRef}
-      />
+      <div className='fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none'>
+        {/* Scroll to Bottom Button */}
+        <ScrollToBottom
+          show={showScrollButton || status === 'streaming'}
+          onClick={scrollToBottomSmooth}
+          isStreaming={status === 'streaming'}
+        />
+
+        <InputArea
+          message={message}
+          setMessage={setMessage}
+          onSend={handleSend}
+          onKeyDown={handleKeyDown}
+          disabled={!conversationId || status !== 'ready'}
+          isStreaming={status === 'streaming'}
+          textareaRef={textareaRef}
+        />
+      </div>
     </main>
   );
 }

@@ -6,10 +6,7 @@ interface ScrollToBottomProps {
   
   export function ScrollToBottom({ onClick, show, isStreaming = false }: ScrollToBottomProps) {
     return (
-      <div className="sticky bottom-0 left-0 right-0 flex justify-center pointer-events-none z-10">
-        {/* Gradient fade background - always visible */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent h-18"></div>
-        
+      <div className="sticky h-[68px] bottom-0 left-0 right-0 flex justify-center pointer-events-none z-10">        
         {/* Button - toggles visibility - smaller size */}
         {show && (
           <div className="relative py-4 animate-fade-in">
