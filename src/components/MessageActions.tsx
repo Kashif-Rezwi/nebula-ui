@@ -24,7 +24,7 @@ export function MessageActions({ content }: MessageActionsProps) {
   };
 
   return (
-    <div className="flex items-center justify-end gap-1 my-4 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="flex items-center justify-end gap-1 my-4">
       {/* Copy Button */}
       <button
         onClick={handleCopy}

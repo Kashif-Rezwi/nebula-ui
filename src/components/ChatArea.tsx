@@ -253,7 +253,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           </div>
         ) : (
           /* Messages List - Single Column */
-          <div className="flex flex-col gap-4 max-w-3xl mx-auto px-4 pt-4 pb-[148px]">
+          <div className="flex flex-col gap-4 max-w-3xl mx-auto px-4 pt-4 pb-[168px]">
             <div className="absolute top-0 left-0 right-0 h-[16px] bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-10" />
             <div className="flex flex-col">
               {(messages as UIMessage[]).map((msg, index) => (
@@ -327,9 +327,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         )}
       </div>
 
-      {/* Input Area */}
-      <div className='fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none'>
-        {/* Scroll to Bottom Button */}
+      <div className='fixed bottom-0 left-0 right-0'>
+        <div className='absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-auto' />
         <ScrollToBottom
           show={showScrollButton || status === 'streaming'}
           onClick={scrollToBottomSmooth}
