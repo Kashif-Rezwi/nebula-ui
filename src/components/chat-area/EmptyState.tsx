@@ -1,5 +1,3 @@
-import betterDevLogo from '../../assets/dev-logo-light.png';
-
 interface EmptyStateProps {
   onSuggestionClick: (text: string) => void;
 }
@@ -38,7 +36,7 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img src={betterDevLogo} alt="better DEV Logo" className="w-12 h-12 object-contain mr-3" />
+            <img src="/dev-logo-light.png" alt="better DEV Logo" className="w-12 h-12 object-contain mr-3" />
             <h2 className="text-3xl font-semibold">Welcome back!</h2>
           </div>
           <p className="text-foreground/60 text-lg">How can I help you today?</p>
