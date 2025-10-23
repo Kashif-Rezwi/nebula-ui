@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form';
 import { useRegister } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import type { RegisterCredentials } from '../types';
-import betterDevLogo from '../assets/dev-logo-light.png';
 import { VALIDATION, MESSAGES } from '../constants';
 
 export function RegisterPage() {
@@ -25,7 +24,7 @@ export function RegisterPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src={betterDevLogo} 
+              src="/dev-logo-light.png" 
               alt="better DEV Logo" 
               className="w-10 h-10 object-contain mr-3"
             />

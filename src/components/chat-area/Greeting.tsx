@@ -1,4 +1,3 @@
-import betterDevLogo from '../../assets/dev-logo-light.png';
 import { useAuth } from '../../hooks/useAuth';
 import { format } from '../../utils';
 
@@ -21,7 +20,7 @@ export function Greeting() {
       <div className="text-center">
         <div className="flex items-center justify-center gap-4 mb-2">
           <img 
-            src={betterDevLogo} 
+            src="/dev-logo-light.png" 
             alt="better DEV" 
             className="w-10 h-10 object-contain"
           />
