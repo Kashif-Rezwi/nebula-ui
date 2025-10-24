@@ -1,7 +1,7 @@
 import { useAuth, useLogout } from '../../hooks/useAuth';
-import { useConversationsManager } from '../../hooks/useConversations';
+import { useConversations, useDeleteConversation } from '../../hooks/useConversations';
 import { useNavigate } from 'react-router-dom';
-import type { ActionsPanelProps, User } from '../../types';
+import type { ActionsPanelProps, Conversation, User } from '../../types';
 import { Header } from './Header';
 import { Features } from './Features';
 import { UserProfile } from './UserProfile';
@@ -17,11 +17,8 @@ export function ActionsPanel({ currentConversationId }: ActionsPanelProps) {
   const { mutate: logout } = useLogout();
 
   // Conversations hooks
-  const {
-    conversations,
-    loading,
-    deleteConversation
-  } = useConversationsManager();
+  const { mutate: deleteConversation } = useDeleteConversation();
+  const { data: conversations = [], isLoading } = useConversations();
 
   const handleDeleteConversation = (conversationId: string) => {
     deleteConversation(conversationId);
@@ -46,8 +43,8 @@ export function ActionsPanel({ currentConversationId }: ActionsPanelProps) {
       <Features />
 
       <Recents
-        loading={loading}
-        conversations={conversations}
+        loading={isLoading}
+        conversations={conversations as Conversation[]}
         currentConversationId={currentConversationId as string}
         handleConversationClick={handleConversationClick}
         handleDeleteConversation={handleDeleteConversation}

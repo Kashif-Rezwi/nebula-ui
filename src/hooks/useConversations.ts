@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { conversationsApi } from '../lib/conversations';
-import { ROUTES, MESSAGES } from '../constants';
+import { ROUTES } from '../constants';
 import { toast } from '../utils/toast';
 import type { Conversation, ConversationWithMessages } from '../types';
 
@@ -32,66 +32,6 @@ export function useConversation(conversationId: string | undefined) {
     enabled: !!conversationId,
     staleTime: 1000 * 60 * 2, // Consider fresh for 2 minutes
     gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
-  });
-}
-
-// Hook to create conversation
-export function useCreateConversation() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (title?: string) => conversationsApi.createConversation(title),
-    onMutate: async (title) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: conversationKeys.lists() });
-
-      // Snapshot the previous value
-      const previousConversations = queryClient.getQueryData(conversationKeys.lists());
-
-      // Optimistically update to the new value
-      const tempConversation: Conversation = {
-        id: `temp-${Date.now()}`,
-        title: title || 'Untitled',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      queryClient.setQueryData(conversationKeys.lists(), (old: Conversation[] = []) => {
-        return [tempConversation, ...old];
-      });
-
-      // Return a context object with the snapshotted value
-      return { previousConversations };
-    },
-    onSuccess: (newConversation) => {
-      // Replace temp conversation with real one
-      queryClient.setQueryData(conversationKeys.lists(), (old: Conversation[] = []) => {
-        return old.map(conv => 
-          conv.id.startsWith('temp-') ? newConversation : conv
-        );
-      });
-      
-      // Set the conversation data in cache so it loads instantly without API call
-      queryClient.setQueryData(
-        conversationKeys.detail(newConversation.id),
-        { ...newConversation, messages: [] }
-      );
-      
-      // DON'T navigate here - let the ChatArea handle it
-      // toast.success('New conversation created'); // Remove toast too
-    },
-    onError: (error: Error, _, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousConversations) {
-        queryClient.setQueryData(conversationKeys.lists(), context.previousConversations);
-      }
-      toast.error(error.message || 'Failed to create conversation');
-    },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: conversationKeys.lists() });
-    },
   });
 }
 
@@ -174,8 +114,8 @@ export function useDeleteConversation() {
       // Get current path
       const currentPath = window.location.pathname;
       if (currentPath.includes(deletedId)) {
-        // If we deleted the current conversation, navigate to chat home
-        navigate(ROUTES.CHAT);
+        // If we deleted the current conversation, navigate to new chat UI
+        navigate(ROUTES.NEW);
       }
     },
     onError: (error: Error, _, context) => {
@@ -190,44 +130,6 @@ export function useDeleteConversation() {
       queryClient.invalidateQueries({ queryKey: conversationKeys.lists() });
     },
   });
-}
-
-// Consolidated hook for backward compatibility
-export function useConversationsManager() {
-  const { data: conversations = [], isLoading } = useConversations();
-  const { mutate: createConversation, isPending: isCreating } = useCreateConversation();
-  const { mutate: deleteConversation, isPending: isDeleting } = useDeleteConversation();
-  const { mutate: updateConversation } = useUpdateConversation();
-
-  const handleCreateConversation = (title?: string) => {
-    createConversation(title);
-  };
-
-  const handleDeleteConversation = (conversationId: string) => {
-    if (!confirm(MESSAGES.ERRORS.DELETE_CONFIRM)) {
-      return;
-    }
-    deleteConversation(conversationId);
-  };
-
-  const handleUpdateConversation = (id: string, data: Partial<Conversation>) => {
-    updateConversation({ id, data });
-  };
-
-  return {
-    // Data
-    conversations,
-    
-    // Loading states
-    loading: isLoading,
-    creating: isCreating,
-    deleting: isDeleting,
-    
-    // Actions
-    createConversation: handleCreateConversation,
-    deleteConversation: handleDeleteConversation,
-    updateConversation: handleUpdateConversation,
-  };
 }
 
 // Hook to generate title for conversation
