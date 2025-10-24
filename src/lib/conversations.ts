@@ -76,4 +76,13 @@ export const conversationsApi = {
       throw new Error(getErrorMessage(error));
     }
   },
+
+  createConversationWithMessage: async (data: {
+    title?: string;
+    firstMessage: string;
+    systemPrompt?: string;
+  }) => {
+    const response = await api.post('/chat/conversations/with-message', data);
+    return response.data;
+  },
 };
