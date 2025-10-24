@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Composer } from './Composer';
 import { ScrollToBottom } from './ScrollToBottom';
-import { EmptyState } from './EmptyState';
 import { Greeting } from './Greeting';
 import { ChatSkeleton } from './ChatSkeleton';
 import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
+import { useCreateConversationWithMessage } from '../../hooks/useCreateConversationWithMessage';
+import { ROUTES } from '../../constants';
 import type { UIMessage } from '@/types';
 
 interface ChatAreaProps {
@@ -15,6 +17,7 @@ interface ChatAreaProps {
 export function ChatArea({ conversationId }: ChatAreaProps) {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const navigate = useNavigate();
 
   const {
     messages,
@@ -28,15 +31,38 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     handleSendMessage,
   } = useConversationMessages(conversationId);
 
+  const { mutateAsync: createConversationWithMessage, isPending: isCreating } = 
+    useCreateConversationWithMessage();
+
   const handleSend = async () => {
     if (!message.trim()) return;
 
-    await handleSendMessage(message);
+    const messageText = message;
     setMessage('');
 
     // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
+    }
+
+    try {
+      if (!conversationId) {
+        // At /new - Create conversation with first message
+        const result = await createConversationWithMessage({
+          title: 'Untitled',
+          firstMessage: messageText,
+        });
+
+        // Navigate to new conversation (message already saved on backend)
+        navigate(ROUTES.CHAT_WITH_ID(result.id));
+      } else {
+        // At /chat/:id - Send message normally
+        await handleSendMessage(messageText);
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      // Restore message on error
+      setMessage(messageText);
     }
   };
 
@@ -47,27 +73,42 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     }
   };
 
-  const handleSuggestionClick = (text: string) => {
-    setMessage(text);
-  };
-
   const hasConversation = Boolean(conversationId);
   const hasMessages = messages.length > 0;
-  const isLoading = loading;
+  const isDisabled = isCreating || (hasConversation && status !== 'ready');
+  const isStreamingOrCreating = status === 'streaming' || isCreating;
 
   return (
     <main className="w-full h-full flex flex-col">
-      {/* Messages Area */}
       <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto">
+        {/* At /new - Show centered greeting + composer */}
         {!hasConversation && (
-          <EmptyState onSuggestionClick={handleSuggestionClick} />
+          <div className="h-full flex items-center justify-center px-4">
+            <div className="flex flex-col items-center gap-8 w-full max-w-3xl">
+              <Greeting />
+              <div className="w-full">
+                <Composer
+                  loading={isCreating}
+                  message={message}
+                  setMessage={setMessage}
+                  onSend={handleSend}
+                  onKeyDown={handleKeyDown}
+                  disabled={isCreating}
+                  isStreaming={false}
+                  textareaRef={textareaRef}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
-        {hasConversation && isLoading && (
+        {/* At /chat/:id - Loading */}
+        {hasConversation && loading && (
           <ChatSkeleton />
         )}
 
-        {hasConversation && !isLoading && !hasMessages && (
+        {/* At /chat/:id - Loaded but no messages (shouldn't happen with new flow) */}
+        {hasConversation && !loading && !hasMessages && (
           <div className="h-full flex items-center justify-center px-4">
             <div className="flex flex-col items-center gap-8 w-full max-w-3xl">
               <Greeting />
@@ -78,8 +119,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
                   setMessage={setMessage}
                   onSend={handleSend}
                   onKeyDown={handleKeyDown}
-                  disabled={status !== 'ready'}
-                  isStreaming={status === 'streaming'}
+                  disabled={isDisabled}
+                  isStreaming={false}
                   textareaRef={textareaRef}
                 />
               </div>
@@ -87,7 +128,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           </div>
         )}
 
-        {hasConversation && !isLoading && hasMessages && (
+        {/* At /chat/:id - Has messages */}
+        {hasConversation && !loading && hasMessages && (
           <>
             <MessageList messages={messages as UIMessage[]} isStreaming={status === 'streaming'} />
             <div ref={messagesEndRef} />
@@ -95,11 +137,11 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         )}
       </div>
 
-      {/* Fixed Bottom Composer - ONLY when has messages */}
-      {hasConversation && !isLoading && hasMessages && (
+      {/* Fixed bottom composer - only when has messages */}
+      {hasConversation && !loading && hasMessages && (
         <div className="fixed bottom-0 left-0 right-0">
           <div className="absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-auto" />
-          
+
           <ScrollToBottom
             show={showScrollButton || status === 'streaming'}
             onClick={scrollToBottomSmooth}
@@ -112,8 +154,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
             setMessage={setMessage}
             onSend={handleSend}
             onKeyDown={handleKeyDown}
-            disabled={status !== 'ready'}
-            isStreaming={status === 'streaming'}
+            disabled={isDisabled}
+            isStreaming={isStreamingOrCreating}
             textareaRef={textareaRef}
           />
         </div>

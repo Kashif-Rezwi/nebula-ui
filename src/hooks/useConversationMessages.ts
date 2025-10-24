@@ -8,22 +8,68 @@ import type { UIMessage } from '../types';
 export function useConversationMessages(conversationId?: string) {
   const [loading, setLoading] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { mutateAsync: generateTitle } = useGenerateTitle();
 
-  const { messages, sendMessage, status, error, setMessages } = useChat({
+  const chatHelpers = useChat({
     transport: createChatTransport(conversationId ?? 'default'),
   });
 
-  // Load conversation messages
+  const { messages, status, error } = chatHelpers;
+
+  // Load conversation messages when conversationId changes
   useEffect(() => {
     if (conversationId) {
+      setHasAutoTriggered(false); // Reset for new conversation
       loadConversation();
     } else {
-      setMessages([]);
+      // No conversation ID - clear messages (at /new)
+      if (chatHelpers.setMessages) {
+        chatHelpers.setMessages([]);
+      }
+      setLoading(false);
     }
   }, [conversationId]);
+
+  // Auto-trigger AI response for newly created conversations
+  useEffect(() => {
+    // Only trigger if:
+    // 1. We have a conversationId
+    // 2. Exactly 1 message exists
+    // 3. Last message is from user
+    // 4. Haven't triggered yet
+    // 5. Chat is ready
+    if (
+      conversationId &&
+      messages.length === 1 &&
+      messages[0].role === 'user' &&
+      !hasAutoTriggered &&
+      status === 'ready' &&
+      !loading
+    ) {
+      setHasAutoTriggered(true);
+      
+      // Trigger AI response by sending the user message
+      const userMessage = messages[0];
+      const messageText = userMessage.parts
+        .filter(part => part.type === 'text')
+        .map(part => part.text)
+        .join('');
+
+      // Send message to trigger AI response
+      if (chatHelpers.sendMessage && messageText) {
+        chatHelpers.sendMessage({
+          role: 'user',
+          parts: [{ type: 'text', text: messageText }],
+        });
+
+        // Generate title
+        generateTitle({ conversationId, message: messageText });
+      }
+    }
+  }, [conversationId, messages, status, hasAutoTriggered, loading]);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -44,9 +90,14 @@ export function useConversationMessages(conversationId?: string) {
         metadata: { createdAt: msg.createdAt },
       }));
 
-      setMessages(uiMessages);
+      if (chatHelpers.setMessages) {
+        chatHelpers.setMessages(uiMessages);
+      }
     } catch (error) {
       console.error('Failed to load conversation:', error);
+      if (chatHelpers.setMessages) {
+        chatHelpers.setMessages([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -77,12 +128,15 @@ export function useConversationMessages(conversationId?: string) {
     if (!messageText.trim() || !conversationId || status !== 'ready') return;
 
     try {
-      sendMessage({
-        role: 'user',
-        parts: [{ type: 'text', text: messageText }],
-      });
+      // Send message through the transport
+      if (chatHelpers.sendMessage) {
+        chatHelpers.sendMessage({
+          role: 'user',
+          parts: [{ type: 'text', text: messageText }],
+        });
+      }
 
-      // Generate title if first message
+      // Generate title if first message (only for non-auto-triggered messages)
       if (messages.length === 0) {
         await generateTitle({ conversationId, message: messageText });
       }
@@ -102,5 +156,6 @@ export function useConversationMessages(conversationId?: string) {
     handleScroll,
     scrollToBottomSmooth,
     handleSendMessage,
+    setMessages: chatHelpers.setMessages,
   };
 }

@@ -72,9 +72,14 @@ export function useCreateConversation() {
         );
       });
       
-      // Navigate to new conversation
-      navigate(ROUTES.CHAT_WITH_ID(newConversation.id));
-      toast.success('New conversation created');
+      // Set the conversation data in cache so it loads instantly without API call
+      queryClient.setQueryData(
+        conversationKeys.detail(newConversation.id),
+        { ...newConversation, messages: [] }
+      );
+      
+      // DON'T navigate here - let the ChatArea handle it
+      // toast.success('New conversation created'); // Remove toast too
     },
     onError: (error: Error, _, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
