@@ -90,7 +90,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
               <Greeting />
               <div className="w-full">
                 <Composer
-                  loading={isCreating}
                   message={message}
                   setMessage={setMessage}
                   onSend={handleSend}
@@ -116,7 +115,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
               <Greeting />
               <div className="w-full">
                 <Composer
-                  loading={false}
                   message={message}
                   setMessage={setMessage}
                   onSend={handleSend}
@@ -139,8 +137,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         )}
       </div>
 
-      {/* Fixed bottom composer - only when has messages */}
-      {hasConversation && !loading && hasMessages && (
+      {/* Fixed bottom composer */}
+      {hasConversation && (
         <div className="fixed bottom-0 left-0 right-0">
           <div className="absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-auto" />
 
@@ -151,7 +149,6 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           />
 
           <Composer
-            loading={false}
             message={message}
             setMessage={setMessage}
             onSend={handleSend}
