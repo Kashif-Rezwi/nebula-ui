@@ -1,5 +1,5 @@
 import { useAuth, useLogout } from '../../hooks/useAuth';
-import { useConversations, useDeleteConversation } from '../../hooks/useConversations';
+import { useConversations, useDeleteConversation } from '../../hooks/conversations';
 import { useNavigate } from 'react-router-dom';
 import type { ActionsPanelProps, Conversation, User } from '../../types';
 import { Header } from './Header';

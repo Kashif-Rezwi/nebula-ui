@@ -6,7 +6,7 @@ import { Greeting } from './Greeting';
 import { ChatSkeleton } from './ChatSkeleton';
 import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
-import { useCreateConversationWithMessage } from '../../hooks/useCreateConversationWithMessage';
+import { useCreateConversationWithMessage } from '../../hooks/conversations';
 import { ROUTES } from '../../constants';
 import type { UIMessage, ChatRouterState } from '@/types';
 

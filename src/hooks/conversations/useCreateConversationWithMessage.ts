@@ -1,17 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api';
-import { toast } from '../utils/toast';
-import { conversationKeys } from './useConversations';
+import { api } from '../../lib/api';
+import { toast } from '../../utils/toast';
+import { conversationKeys } from './keys';
 import {
   createTempConversation,
   createConversationFromResponse,
-} from '../utils/conversationHelpers';
+} from '../../utils/conversationHelpers';
 import {
   addConversationOptimistically,
   replaceTempConversation,
   rollbackConversations,
   preCacheConversationDetail,
-} from '../utils/optimisticUpdates';
+} from '../../utils/optimisticUpdates';
 
 interface CreateConversationWithMessageParams {
   title?: string;
