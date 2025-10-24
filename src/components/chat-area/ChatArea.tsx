@@ -8,7 +8,7 @@ import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useCreateConversationWithMessage } from '../../hooks/useCreateConversationWithMessage';
 import { ROUTES } from '../../constants';
-import type { UIMessage } from '@/types';
+import type { UIMessage, ChatRouterState } from '@/types';
 
 interface ChatAreaProps {
   conversationId?: string;
@@ -53,8 +53,10 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           firstMessage: messageText,
         });
 
-        // Navigate to new conversation (message already saved on backend)
-        navigate(ROUTES.CHAT_WITH_ID(result.id));
+        // Navigate with state flag to trigger AI response
+        navigate(ROUTES.CHAT_WITH_ID(result.id), {
+          state: { shouldAutoTrigger: true } as ChatRouterState,
+        });
       } else {
         // At /chat/:id - Send message normally
         await handleSendMessage(messageText);
@@ -107,7 +109,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
           <ChatSkeleton />
         )}
 
-        {/* At /chat/:id - Loaded but no messages (shouldn't happen with new flow) */}
+        {/* At /chat/:id - Loaded but no messages */}
         {hasConversation && !loading && !hasMessages && (
           <div className="h-full flex items-center justify-center px-4">
             <div className="flex flex-col items-center gap-8 w-full max-w-3xl">

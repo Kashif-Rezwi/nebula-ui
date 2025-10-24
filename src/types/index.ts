@@ -88,3 +88,7 @@ export interface SystemPromptModalProps {
 export interface ProtectedRouteProps {
   children: React.ReactNode;
 }
+
+export interface ChatRouterState {
+  shouldAutoTrigger?: boolean;
+}

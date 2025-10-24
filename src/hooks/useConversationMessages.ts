@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom'; // ADD THIS
 import { useChat } from '@ai-sdk/react';
 import { conversationsApi } from '../lib/conversations';
 import { createChatTransport } from '../lib/createChatTransport';
 import { useGenerateTitle } from './useConversations';
-import type { UIMessage } from '../types';
+import type { UIMessage, ChatRouterState } from '../types'; // ADD ChatRouterState
 
 export function useConversationMessages(conversationId?: string) {
   const [loading, setLoading] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [hasAutoTriggered, setHasAutoTriggered] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { mutateAsync: generateTitle } = useGenerateTitle();
+  const location = useLocation();
 
   const chatHelpers = useChat({
     transport: createChatTransport(conversationId ?? 'default'),
@@ -22,7 +23,6 @@ export function useConversationMessages(conversationId?: string) {
   // Load conversation messages when conversationId changes
   useEffect(() => {
     if (conversationId) {
-      setHasAutoTriggered(false); // Reset for new conversation
       loadConversation();
     } else {
       // No conversation ID - clear messages (at /new)
@@ -33,23 +33,25 @@ export function useConversationMessages(conversationId?: string) {
     }
   }, [conversationId]);
 
-  // Auto-trigger AI response for newly created conversations
+  // Auto-trigger AI response when navigating from /new with shouldAutoTrigger flag
   useEffect(() => {
+    const routerState = location.state as ChatRouterState | null;
+    
     // Only trigger if:
-    // 1. We have a conversationId
-    // 2. Exactly 1 message exists
-    // 3. Last message is from user
-    // 4. Haven't triggered yet
-    // 5. Chat is ready
+    // 1. We have the flag from navigation
+    // 2. Conversation is loaded (not loading)
+    // 3. Chat is ready
+    // 4. We have exactly 1 user message
     if (
+      routerState?.shouldAutoTrigger &&
       conversationId &&
-      messages.length === 1 &&
-      messages[0].role === 'user' &&
-      !hasAutoTriggered &&
+      !loading &&
       status === 'ready' &&
-      !loading
+      messages.length === 1 &&
+      messages[0].role === 'user'
     ) {
-      setHasAutoTriggered(true);
+      // Clear the flag so we don't trigger again
+      window.history.replaceState({}, document.title);
       
       // Trigger AI response by sending the user message
       const userMessage = messages[0];
@@ -69,7 +71,7 @@ export function useConversationMessages(conversationId?: string) {
         generateTitle({ conversationId, message: messageText });
       }
     }
-  }, [conversationId, messages, status, hasAutoTriggered, loading]);
+  }, [conversationId, loading, status, messages, location.state]);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -128,7 +130,6 @@ export function useConversationMessages(conversationId?: string) {
     if (!messageText.trim() || !conversationId || status !== 'ready') return;
 
     try {
-      // Send message through the transport
       if (chatHelpers.sendMessage) {
         chatHelpers.sendMessage({
           role: 'user',
