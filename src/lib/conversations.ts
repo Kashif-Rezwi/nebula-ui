@@ -2,6 +2,16 @@ import { api, getErrorMessage } from './api';
 import type { Conversation, ConversationWithMessages } from '../types';
 
 export const conversationsApi = {
+  // Creates conversation with a message
+  createConversationWithMessage: async (data: {
+    title?: string;
+    firstMessage: string;
+    systemPrompt?: string;
+  }) => {
+    const response = await api.post('/chat/conversations/with-message', data);
+    return response.data;
+  },
+
   // Get all conversations for the current user
   getConversations: async (): Promise<Conversation[]> => {
     try {
@@ -16,16 +26,6 @@ export const conversationsApi = {
   getConversation: async (id: string): Promise<ConversationWithMessages> => {
     try {
       const response = await api.get(`/chat/conversations/${id}`);
-      return response.data;
-    } catch (error) {
-      throw new Error(getErrorMessage(error));
-    }
-  },
-
-  // Create new conversation
-  createConversation: async (title: string = 'Untitled'): Promise<Conversation> => {
-    try {
-      const response = await api.post('/chat/conversations', { title });
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error));
@@ -75,14 +75,5 @@ export const conversationsApi = {
       console.error('Failed to update system prompt:', error);
       throw new Error(getErrorMessage(error));
     }
-  },
-
-  createConversationWithMessage: async (data: {
-    title?: string;
-    firstMessage: string;
-    systemPrompt?: string;
-  }) => {
-    const response = await api.post('/chat/conversations/with-message', data);
-    return response.data;
-  },
+  }
 };
