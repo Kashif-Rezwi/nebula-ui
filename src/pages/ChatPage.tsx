@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { ActionsPanel } from '../components/actions-panel/ActionsPanel';
 import { ChatArea } from '../components/chat-area/ChatArea';
-import { useConversation, useUpdateSystemPrompt } from '../hooks/useConversations';
+import { useConversation, useUpdateSystemPrompt } from '../hooks/conversations';
 import { ActivitiesPanel } from '../components/activities-panel/ActivitiesPanel';
 
 export function ChatPage() {

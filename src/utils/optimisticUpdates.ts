@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { conversationKeys } from '../hooks/useConversations';
+import { conversationKeys } from '../hooks/conversations';
 import type { Conversation } from '../types';
 import { isTempConversation } from './conversationHelpers';
 

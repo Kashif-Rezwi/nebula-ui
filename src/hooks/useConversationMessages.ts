@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom'; // ADD THIS
+import { useLocation } from 'react-router-dom';
 import { useChat } from '@ai-sdk/react';
 import { conversationsApi } from '../lib/conversations';
 import { createChatTransport } from '../lib/createChatTransport';
-import { useGenerateTitle } from './useConversations';
+import { useGenerateTitle } from './conversations';
 import type { UIMessage, ChatRouterState } from '../types'; // ADD ChatRouterState
 
 export function useConversationMessages(conversationId?: string) {
