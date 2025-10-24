@@ -30,8 +30,8 @@ export function useLogin() {
       // Show success message
       toast.success('Welcome back!');
       
-      // Navigate to chat
-      navigate(ROUTES.CHAT);
+      // Navigate to new chat page
+      navigate(ROUTES.NEW);
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Login failed. Please try again.');
@@ -57,8 +57,8 @@ export function useRegister() {
       // Show success message
       toast.success('Account created successfully!');
       
-      // Navigate to chat
-      navigate(ROUTES.CHAT);
+      // Navigate to new chat page
+      navigate(ROUTES.NEW);
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Registration failed. Please try again.');

@@ -15,7 +15,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
-            path="/chat"
+            path="/new"
             element={
               <ProtectedRoute>
                 <ChatPage />
@@ -30,7 +30,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/chat" replace />} />
+          <Route path="/" element={<Navigate to="/new" replace />} />
         </Routes>
       </BrowserRouter>
       {/* Add React Query Devtools in development */}
