@@ -10,14 +10,15 @@ export const API_CONFIG = {
     USER: 'user',
   } as const;
   
-  // Route Paths
-  export const ROUTES = {
-    HOME: '/',
-    LOGIN: '/login',
-    REGISTER: '/register',
-    CHAT: '/chat',
-    CHAT_WITH_ID: (id: string) => `/chat/${id}`,
-  } as const;
+// Route Paths
+export const ROUTES = {
+  HOME: '/',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  NEW: '/new',
+  CHAT: '/chat',
+  CHAT_WITH_ID: (id: string) => `/chat/${id}`,
+} as const;
   
   // UI Configuration
   export const UI_CONFIG = {
