@@ -7,8 +7,8 @@ import { ChatSkeleton } from './ChatSkeleton';
 import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useCreateConversationWithMessage } from '../../hooks/conversations';
-import { ROUTES } from '../../constants';
 import type { UIMessage, ChatRouterState } from '@/types';
+import { ROUTES } from '../../constants';
 
 interface ChatAreaProps {
   conversationId?: string;
