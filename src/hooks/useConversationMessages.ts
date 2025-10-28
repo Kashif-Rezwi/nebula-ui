@@ -4,7 +4,7 @@ import { useChat } from '@ai-sdk/react';
 import { conversationsApi } from '../lib/conversations';
 import { createChatTransport } from '../lib/createChatTransport';
 import { useGenerateTitle } from './conversations';
-import type { UIMessage, ChatRouterState } from '../types'; // ADD ChatRouterState
+import type { UIMessage, ChatRouterState } from '../types';
 
 export function useConversationMessages(conversationId?: string) {
   const [loading, setLoading] = useState(false);
@@ -13,44 +13,49 @@ export function useConversationMessages(conversationId?: string) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { mutateAsync: generateTitle } = useGenerateTitle();
   const location = useLocation();
+  
+  // Use ref to prevent re-triggering
+  const hasTriggeredRef = useRef(false);
 
-  const chatHelpers = useChat({
+  const { messages, status, error, setMessages, sendMessage } = useChat({
     transport: createChatTransport(conversationId ?? 'default'),
   });
 
-  const { messages, status, error } = chatHelpers;
+  // Reset trigger flag when conversation changes
+  useEffect(() => {
+    hasTriggeredRef.current = false;
+  }, [conversationId]);
 
   // Load conversation messages when conversationId changes
   useEffect(() => {
     if (conversationId) {
       loadConversation();
     } else {
-      // No conversation ID - clear messages (at /new)
-      if (chatHelpers.setMessages) {
-        chatHelpers.setMessages([]);
+      if (setMessages) {
+        setMessages([]);
       }
       setLoading(false);
     }
   }, [conversationId]);
 
-  // Auto-trigger AI response when navigating from /new with shouldAutoTrigger flag
+  // Simple auto-trigger with ref to prevent duplicates
   useEffect(() => {
     const routerState = location.state as ChatRouterState | null;
     
-    // Only trigger if:
-    // 1. We have the flag from navigation
-    // 2. Conversation is loaded (not loading)
-    // 3. Chat is ready
-    // 4. We have exactly 1 user message
+    // Only trigger once using ref
     if (
       routerState?.shouldAutoTrigger &&
       conversationId &&
       !loading &&
       status === 'ready' &&
       messages.length === 1 &&
-      messages[0].role === 'user'
+      messages[0].role === 'user' &&
+      !hasTriggeredRef.current  // ✅ Check ref
     ) {
-      // Clear the flag so we don't trigger again
+      // Mark as triggered
+      hasTriggeredRef.current = true;
+      
+      // Clear the flag
       window.history.replaceState({}, document.title);
       
       // Trigger AI response by sending the user message
@@ -60,18 +65,26 @@ export function useConversationMessages(conversationId?: string) {
         .map(part => part.text)
         .join('');
 
-      // Send message to trigger AI response
-      if (chatHelpers.sendMessage && messageText) {
-        chatHelpers.sendMessage({
-          role: 'user',
-          parts: [{ type: 'text', text: messageText }],
-        });
-
-        // Generate title
-        generateTitle({ conversationId, message: messageText });
+      // This prevents the duplicate
+      if (setMessages && sendMessage) {
+        // Temporarily clear messages
+        setMessages([]);
+        
+        // Use setTimeout to ensure state update completes
+        setTimeout(() => {
+          // Now send - no duplicate because array is empty!
+          sendMessage({
+            role: 'user',
+            parts: [{ type: 'text', text: messageText }],
+          });
+        }, 0);
       }
+
+      // Generate title
+      generateTitle({ conversationId, message: messageText });
     }
-  }, [conversationId, loading, status, messages, location.state]);
+  }, [conversationId, loading, status, messages.length, location.state]);
+  // Only depend on messages.length, not messages array itself
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -92,13 +105,13 @@ export function useConversationMessages(conversationId?: string) {
         metadata: { createdAt: msg.createdAt },
       }));
 
-      if (chatHelpers.setMessages) {
-        chatHelpers.setMessages(uiMessages);
+      if (setMessages) {
+        setMessages(uiMessages);
       }
     } catch (error) {
       console.error('Failed to load conversation:', error);
-      if (chatHelpers.setMessages) {
-        chatHelpers.setMessages([]);
+      if (setMessages) {
+        setMessages([]);
       }
     } finally {
       setLoading(false);
@@ -130,14 +143,14 @@ export function useConversationMessages(conversationId?: string) {
     if (!messageText.trim() || !conversationId || status !== 'ready') return;
 
     try {
-      if (chatHelpers.sendMessage) {
-        chatHelpers.sendMessage({
+      if (sendMessage) {
+        sendMessage({
           role: 'user',
           parts: [{ type: 'text', text: messageText }],
         });
       }
 
-      // Generate title if first message (only for non-auto-triggered messages)
+      // Generate title if first message
       if (messages.length === 0) {
         await generateTitle({ conversationId, message: messageText });
       }
@@ -157,6 +170,6 @@ export function useConversationMessages(conversationId?: string) {
     handleScroll,
     scrollToBottomSmooth,
     handleSendMessage,
-    setMessages: chatHelpers.setMessages,
+    setMessages,
   };
 }
