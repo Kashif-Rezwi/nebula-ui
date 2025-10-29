@@ -131,7 +131,10 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         {/* At /chat/:id - Has messages */}
         {hasConversation && !loading && hasMessages && (
           <>
-            <MessageList messages={messages as UIMessage[]} isStreaming={status === 'streaming'} />
+            <MessageList 
+              messages={messages as UIMessage[]} 
+              isStreaming={status === 'streaming'}
+            />
             <div ref={messagesEndRef} />
           </>
         )}

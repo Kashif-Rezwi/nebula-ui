@@ -1,3 +1,4 @@
+import { useRef, useState, useLayoutEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { format } from '../../utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -12,6 +13,8 @@ interface MessageListProps {
 export function MessageList({ messages, isStreaming }: MessageListProps) {
   const { getUser } = useAuth();
   const user = getUser();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [dynamicPadding, setDynamicPadding] = useState(168);
 
   const getMessageText = (msg: UIMessage): string => {
     return msg.parts
@@ -20,8 +23,46 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
       .join('');
   };
 
+  useLayoutEffect(() => {
+    const calculatePadding = () => {
+      const container = messagesEndRef.current?.parentElement;
+      if (!container || messages.length < 2) {
+        setDynamicPadding(168);
+        return;
+      }
+
+      const lastTwo = Array.from(container.querySelectorAll('[data-message-id]')).slice(-2);
+      const totalHeight = lastTwo.reduce((sum, el) => sum + (el as HTMLElement).offsetHeight, 0);
+      const topSpace = 16; // this might be increase after adding chat title!
+      const totalSpaceBetweenMessages = 48 // 16px each (total 3 messages)
+      const padding = Math.max(168, window.innerHeight - totalHeight - totalSpaceBetweenMessages - topSpace);
+      
+      setDynamicPadding(padding);
+    };
+
+    calculatePadding();
+    const rafId = requestAnimationFrame(calculatePadding);
+    
+    const observer = new ResizeObserver(() => requestAnimationFrame(calculatePadding));
+    const container = messagesEndRef.current?.parentElement;
+    
+    container?.querySelectorAll('[data-message-id]')
+      .forEach((el, i, arr) => i >= arr.length - 2 && observer.observe(el));
+    
+    window.addEventListener('resize', calculatePadding);
+    
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+      window.removeEventListener('resize', calculatePadding);
+    };
+  }, [messages]);
+
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-4 pb-[168px]">
+    <div 
+      className="max-w-3xl mx-auto px-4 pt-4" 
+      style={{ paddingBottom: `${dynamicPadding}px` }}
+    >
       {/* Top gradient fade */}
       <div className="absolute top-0 left-0 right-0 h-[16px] bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-10" />
 
@@ -74,17 +115,9 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
             )}
           </div>
         ))}
-
-        {/* Streaming Indicator */}
-        {isStreaming && (
-          <div className="animate-fade-in">
-            <div className="flex space-x-2">
-              <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-            </div>
-          </div>
-        )}
+        
+        {/* Ref marker for measuring */}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );
