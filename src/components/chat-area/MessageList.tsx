@@ -28,7 +28,13 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
       {/* Messages */}
       <div className="flex flex-col gap-6">
         {messages.map((msg, index) => (
-          <div key={msg.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+          <div 
+            key={msg.id} 
+            data-message-id={msg.id}
+            data-role={msg.role}
+            className="animate-fade-in" 
+            style={{ animationDelay: `${index * 0.05}s` }}
+          >
             {msg.role === 'user' ? (
               /* User Message */
               <div>
