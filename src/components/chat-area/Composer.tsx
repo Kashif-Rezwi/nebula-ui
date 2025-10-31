@@ -1,3 +1,5 @@
+import { useEffect, useCallback } from 'react';
+
 interface InputAreaProps {
   message: string;
   setMessage: (value: string) => void;
@@ -17,6 +19,16 @@ export function Composer({
   isStreaming = false,
   textareaRef,
 }: InputAreaProps) {
+  // Callback ref that focuses whenever the element is attached/updated
+  const callbackRef = useCallback((node: HTMLTextAreaElement | null) => {
+    if (node) node.focus();
+
+    // Also assign to the forwarded ref
+    if (textareaRef && 'current' in textareaRef) {
+      (textareaRef as React.RefObject<HTMLTextAreaElement | null>).current = node;
+    };
+  }, [isStreaming, disabled, textareaRef]);
+
   return (
     <div className="relative px-4 bt-0 pb-4">
       <div className="max-w-3xl mx-auto z-10">
@@ -28,7 +40,8 @@ export function Composer({
             {/* Input Field - Top Section */}
             <div className="p-4">
               <textarea
-                ref={textareaRef}
+                autoFocus
+                ref={callbackRef}
                 value={message}
                 onChange={(e) => {
                   setMessage(e.target.value);
@@ -40,7 +53,7 @@ export function Composer({
                 className="w-full bg-transparent text-[15px] text-white focus:outline-none resize-none overflow-y-auto placeholder:text-[#666666] leading-6"
                 rows={1}
                 style={{ minHeight: '24px', maxHeight: '200px' }}
-                disabled={disabled || isStreaming}
+                // disabled={disabled || isStreaming}
               />
             </div>
 
