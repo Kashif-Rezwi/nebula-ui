@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Composer } from './Composer';
 import { ScrollToBottom } from './ScrollToBottom';
@@ -7,6 +7,7 @@ import { ChatSkeleton } from './ChatSkeleton';
 import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useCreateConversationWithMessage } from '../../hooks/conversations';
+import { useScrollToMessage } from '../../hooks/useScrollToMessage';
 import type { UIMessage, ChatRouterState } from '@/types';
 import { ROUTES } from '../../constants';
 
@@ -18,6 +19,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
+  const prevMessagesLengthRef = useRef(0);
 
   const {
     messages,
@@ -30,6 +32,36 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     scrollToBottomSmooth,
     handleSendMessage,
   } = useConversationMessages(conversationId);
+
+  // Add scroll-to-message functionality
+  const { scrollToMessage } = useScrollToMessage(messagesContainerRef as RefObject<HTMLDivElement>);
+
+  // Automatically scroll to new USER messages only (not AI responses)
+  useEffect(() => {
+    // Skip if no messages or still loading
+    if (messages.length === 0 || loading) {
+      return;
+    }
+
+    // Check if a new message was added
+    if (messages.length > prevMessagesLengthRef.current) {
+      const latestMessage = messages[messages.length - 1];
+      
+      // ONLY scroll if the latest message is from the USER
+      if (latestMessage.role === 'user') {
+        // Wait a bit for the DOM to update, then scroll to the new message
+        setTimeout(() => {
+          scrollToMessage(latestMessage.id, {
+            offset: 16, // 16px from top of viewport
+            behavior: 'smooth'
+          });
+        }, 800);
+      }
+    }
+
+    // Update previous length
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages, loading, scrollToMessage]);
 
   const { mutateAsync: createConversationWithMessage, isPending: isCreating } = 
     useCreateConversationWithMessage();
