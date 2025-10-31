@@ -1,4 +1,4 @@
-import { useRef, useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { format } from '../../utils';
 import { useAuth } from '../../hooks/useAuth';
@@ -13,7 +13,6 @@ interface MessageListProps {
 export function MessageList({ messages, isStreaming }: MessageListProps) {
   const { getUser } = useAuth();
   const user = getUser();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [dynamicPadding, setDynamicPadding] = useState(168);
 
   const getMessageText = (msg: UIMessage): string => {
@@ -25,7 +24,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 
   useLayoutEffect(() => {
     const calculatePadding = () => {
-      const container = messagesEndRef.current?.parentElement;
+      const container = document.querySelector('[data-messages-container]');
       if (!container || messages.length < 2) {
         setDynamicPadding(168);
         return;
@@ -44,7 +43,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
     const rafId = requestAnimationFrame(calculatePadding);
     
     const observer = new ResizeObserver(() => requestAnimationFrame(calculatePadding));
-    const container = messagesEndRef.current?.parentElement;
+    const container = document.querySelector('[data-messages-container]');
     
     container?.querySelectorAll('[data-message-id]')
       .forEach((el, i, arr) => i >= arr.length - 2 && observer.observe(el));
@@ -60,6 +59,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 
   return (
     <div 
+      data-messages-container
       className="max-w-3xl mx-auto px-4 pt-4" 
       style={{ paddingBottom: `${dynamicPadding}px` }}
     >
@@ -115,9 +115,6 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
             )}
           </div>
         ))}
-        
-        {/* Ref marker for measuring */}
-        <div ref={messagesEndRef} />
       </div>
     </div>
   );

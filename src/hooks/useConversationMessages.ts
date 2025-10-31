@@ -50,7 +50,7 @@ export function useConversationMessages(conversationId?: string) {
       status === 'ready' &&
       messages.length === 1 &&
       messages[0].role === 'user' &&
-      !hasTriggeredRef.current  // ✅ Check ref
+      !hasTriggeredRef.current
     ) {
       // Mark as triggered
       hasTriggeredRef.current = true;
@@ -86,11 +86,6 @@ export function useConversationMessages(conversationId?: string) {
   }, [conversationId, loading, status, messages.length, location.state]);
   // Only depend on messages.length, not messages array itself
 
-  // Auto-scroll on new messages
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, status]);
-
   const loadConversation = async () => {
     if (!conversationId) return;
 
@@ -115,17 +110,6 @@ export function useConversationMessages(conversationId?: string) {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
-
-      if (isNearBottom) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }
     }
   };
 
