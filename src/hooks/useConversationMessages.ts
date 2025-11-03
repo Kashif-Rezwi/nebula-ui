@@ -93,12 +93,45 @@ export function useConversationMessages(conversationId?: string) {
       setLoading(true);
       const conversation = await conversationsApi.getConversation(conversationId);
 
-      const uiMessages: UIMessage[] = (conversation.messages || []).map((msg) => ({
-        id: msg.id,
-        role: msg.role as 'user' | 'assistant' | 'system',
-        parts: [{ type: 'text', text: msg.content }],
-        metadata: { createdAt: msg.createdAt },
-      }));
+      const uiMessages: UIMessage[] = (conversation.messages || []).map((msg) => {
+        // Start with text part
+        const parts: any[] = [{ type: 'text', text: msg.content }];
+
+        // Reconstruct tool parts from metadata (if exists)
+        if (msg.metadata?.toolCalls && Array.isArray(msg.metadata.toolCalls)) {
+          msg.metadata.toolCalls.forEach((toolCall) => {
+            // Create the base tool part structure
+            const toolPart: Record<string, any> = {
+              type: toolCall.type,
+              state: toolCall.state,
+            };
+
+            // Add toolName if it's a dynamic tool
+            if (toolCall.type === 'dynamic-tool' && toolCall.toolName) {
+              toolPart.toolName = toolCall.toolName;
+            }
+
+            // Add output or error based on state
+            if (toolCall.state === 'output-available' && toolCall.output) {
+              toolPart.output = toolCall.output;
+            } else if (toolCall.state === 'output-error' && toolCall.errorText) {
+              toolPart.errorText = toolCall.errorText;
+            }
+
+            parts.push(toolPart);
+          });
+        }
+
+        // Return UIMessage with proper structure
+        return {
+          id: msg.id,
+          role: msg.role,
+          parts,
+          metadata: { 
+            createdAt: msg.createdAt,
+          },
+        } as UIMessage;
+      });
 
       if (setMessages) {
         setMessages(uiMessages);

@@ -3,11 +3,47 @@ import ReactMarkdown from 'react-markdown';
 import { format } from '../../utils';
 import { useAuth } from '../../hooks/useAuth';
 import { MessageActions } from './MessageActions';
-import type { UIMessage } from '../../types';
+import { ToolCallStatus } from './ToolCallStatus';
+import type { UIMessage, WebSearchSource, SearchSummary } from '../../types';
 
 interface MessageListProps {
   messages: UIMessage[];
   isStreaming: boolean;
+}
+
+// Helper to parse tool output into sources AND summary
+function parseToolOutput(output: any): { 
+  sources: WebSearchSource[]; 
+  summary?: SearchSummary;
+} {
+  if (!output) return { sources: [] };
+  
+  try {
+    // Check if it's web search results
+    if (output.results && Array.isArray(output.results)) {
+      const sources = output.results.map((r: any) => ({
+        title: r.title || '',
+        url: r.url || '',
+        snippet: r.snippet || '',
+        favicon: r.favicon || '',
+        relevanceScore: r.relevanceScore || 0,
+      }));
+
+      // Extract summary if available
+      const summary = output.summary && output.citations
+        ? {
+            text: output.summary,
+            citations: output.citations,
+          }
+        : undefined;
+
+      return { sources, summary };
+    }
+  } catch (error) {
+    console.error('Failed to parse tool output:', error);
+  }
+  
+  return { sources: [] };
 }
 
 export function MessageList({ messages, isStreaming }: MessageListProps) {
@@ -32,8 +68,8 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 
       const lastTwo = Array.from(container.querySelectorAll('[data-message-id]')).slice(-2);
       const totalHeight = lastTwo.reduce((sum, el) => sum + (el as HTMLElement).offsetHeight, 0);
-      const topSpace = 16; // this might be increase after adding chat title!
-      const totalSpaceBetweenMessages = 48 // 16px each (total 3 messages)
+      const topSpace = 16;
+      const totalSpaceBetweenMessages = 48;
       const padding = Math.max(168, window.innerHeight - totalHeight - totalSpaceBetweenMessages - topSpace);
       
       setDynamicPadding(padding);
@@ -56,6 +92,12 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
       window.removeEventListener('resize', calculatePadding);
     };
   }, [messages]);
+
+  console.log('📝 Messages:', messages.map(m => ({
+    id: m.id,
+    role: m.role,
+    parts: m.parts.map(p => ({ type: p.type }))
+  })));
 
   return (
     <div 
@@ -99,9 +141,69 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
             ) : (
               /* AI Message */
               <div className="group text-[15px] text-[#e8e8e8]">
-                <div className="prose prose-invert prose-sm max-w-none">
-                  <ReactMarkdown>{getMessageText(msg)}</ReactMarkdown>
-                </div>
+                {/* Render message parts */}
+                {msg.parts.map((part, partIndex) => {
+                  switch (part.type) {
+                    case 'text':
+                      return (
+                        <div key={partIndex} className="prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown>{part.text}</ReactMarkdown>
+                        </div>
+                      );
+                    
+                    case 'tool-tavily_web_search': {
+                      const { sources, summary } = parseToolOutput(
+                        part.state === 'output-available' ? part.output : undefined
+                      );
+                      
+                      return (
+                        <ToolCallStatus
+                          key={partIndex}
+                          toolName="tavily_web_search"
+                          status={
+                            part.state === 'output-available' ? 'success' :
+                            part.state === 'output-error' ? 'error' : 'pending'
+                          }
+                          sources={sources}
+                          summary={summary}
+                          error={
+                            part.state === 'output-error' 
+                              ? part.errorText 
+                              : undefined
+                          }
+                        />
+                      );
+                    }
+                    
+                    case 'dynamic-tool': {
+                      const { sources, summary } = parseToolOutput(
+                        part.state === 'output-available' ? part.output : undefined
+                      );
+                      
+                      return (
+                        <ToolCallStatus
+                          key={partIndex}
+                          toolName={part.toolName}
+                          status={
+                            part.state === 'output-available' ? 'success' :
+                            part.state === 'output-error' ? 'error' : 'pending'
+                          }
+                          sources={sources}
+                          summary={summary}
+                          error={
+                            part.state === 'output-error' 
+                              ? part.errorText 
+                              : undefined
+                          }
+                        />
+                      );
+                    }
+                    
+                    default:
+                      return null;
+                  }
+                })}
+                            
                 {msg.metadata?.createdAt && (
                   <div
                     className="text-xs text-foreground/40 mt-1"

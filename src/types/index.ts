@@ -4,6 +4,8 @@ import type { UIMessage as BaseUIMessage } from '@ai-sdk/react';
 export interface UIMessage extends BaseUIMessage {
   metadata?: {
     createdAt?: string;
+    toolCalls?: ToolCall[];
+    sources?: WebSearchSource[];
     [key: string]: unknown;
   };
 }
@@ -44,6 +46,16 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt: string;
+  metadata?: {
+    toolCalls?: Array<{
+      type: string;
+      toolName?: string;
+      state: 'pending' | 'output-available' | 'output-error';
+      output?: any;
+      errorText?: string;
+    }>;
+    [key: string]: any;
+  };
 }
 
 export interface ConversationWithMessages extends Conversation {
@@ -91,4 +103,36 @@ export interface ProtectedRouteProps {
 
 export interface ChatRouterState {
   shouldAutoTrigger?: boolean;
+}
+
+export interface ToolCall {
+  id: string;
+  name: string;
+  args: any;
+  status: 'pending' | 'success' | 'error';
+  result?: any;
+  error?: string;
+  timestamp: string;
+}
+
+export interface WebSearchSource {
+  title: string;
+  url: string;
+  snippet: string;
+  favicon: string;
+  relevanceScore: number;
+}
+
+export interface SearchSummary {
+  text: string;
+  citations: Array<{
+    text: string;
+    sourceIndex: number;
+    url: string;
+  }>;
+}
+
+export interface ToolCallMessageMetadata {
+  toolCalls?: ToolCall[];
+  sources?: WebSearchSource[];
 }
