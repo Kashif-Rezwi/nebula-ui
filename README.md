@@ -69,6 +69,7 @@ better DEV UI is a production-ready, modern chat interface for AI conversations.
 ### **UI & Styling**
 - **TailwindCSS 4.1** - Utility-first CSS framework
 - **Radix UI** - Accessible component primitives
+- **shadcn/ui patterns** - Pre-styled Radix components
 - **React Markdown** - Markdown rendering for chat messages
 - **Lucide React** - Beautiful icon library
 
@@ -252,25 +253,24 @@ better-dev-ui/
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        ChatPage                             │
-│  (Main Layout - Manages conversation state)                 │
-└────────┬──────────────────────────────────────┬─────────────┘
-         │                                      │
-    ┌────┴────────┐               ┌─────────────┴─────────────┐
-    │             │               │                           │
-┌───▼───────┐ ┌───▼─────────┐ ┌───▼──────────────┐ ┌──────────▼──────┐
-│ Actions   │ │  Chat Area  │ │  Activities      │ │  Protected      │
-│ Panel     │ │  (Main)     │ │  Panel           │ │  Route          │
-│ (Left)    │ │             │ │  (Right)         │ │  (Wrapper)      │
-└───────────┘ └─────────────┘ └──────────────────┘ └─────────────────┘
-     │              │                   │
-     │              │                   │
-┌────▼────┐    ┌────▼───────┐    ┌──────▼────────┐
-│ Header  │    │ Composer   │    │ System Prompt │
-│ Features│    │ MessageList│    │ Card          │
-│ Recents │    │ Greeting   │    │               │
-│ Profile │    │ Skeleton   │    │               │
-└─────────┘    └────────────┘    └───────────────┘
+│                           App                               │
+│                      (BrowserRouter)                        │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │  ProtectedRoute │
+                    │  (Auth Wrapper) │
+                    └────────┬────────┘
+                             │
+                ┌────────────▼────────────┐
+                │        ChatPage         │
+                │    (Layout Manager)     │
+                └─┬──────────┬──────────┬─┘
+                  │          │          │
+      ┌───────────▼───┐ ┌────▼───┐ ┌────▼──────────┐
+      │ ActionsPanel  │ │  Chat  │ │ Activities    │
+      │  (Left)       │ │  Area  │ │ Panel (Right) │
+      └───────────────┘ └────────┘ └───────────────┘
 ```
 
 ### **State Management Flow**
@@ -706,6 +706,7 @@ This project is licensed under the **UNLICENSED** License.
 - [TanStack Query](https://tanstack.com/query) - Data fetching
 - [AI SDK](https://sdk.vercel.ai/) - AI streaming
 - [Radix UI](https://www.radix-ui.com/) - UI primitives
+- [shadcn/ui](https://ui.shadcn.com/) - Component patterns and styling
 - [Vercel](https://vercel.com/) - Deployment platform
 
 ---
