@@ -26,7 +26,7 @@
 
 ## 🌟 Overview
 
-better DEV UI is a production-ready, modern chat interface for AI conversations. Built with the latest web technologies, it provides a seamless, real-time experience with streaming responses, tool visibility, and conversation management.
+Better DEV UI is a production-ready, modern chat interface for AI conversations. Built with the latest web technologies, it provides a seamless, real-time experience with streaming responses, tool visibility, and conversation management.
 
 **Live Demo:** [Your Frontend URL]
 
