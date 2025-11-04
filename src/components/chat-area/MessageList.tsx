@@ -46,7 +46,10 @@ function parseToolOutput(output: any): {
   return { sources: [] };
 }
 
-export function MessageList({ messages, isStreaming }: MessageListProps) {
+export function MessageList({ 
+  messages, 
+  // isStreaming,
+}: MessageListProps) {
   const { getUser } = useAuth();
   const user = getUser();
   const [dynamicPadding, setDynamicPadding] = useState(168);

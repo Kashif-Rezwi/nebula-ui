@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+// import ReactMarkdown from 'react-markdown';
 import type { SearchSummary as SearchSummaryType, WebSearchSource } from '../../types';
 
 interface SearchSummaryProps {

@@ -12,7 +12,7 @@ interface ToolCallStatusProps {
 }
 
 export function ToolCallStatus({ 
-  toolName, 
+//   toolName, 
   status, 
   sources = [],
   summary,
