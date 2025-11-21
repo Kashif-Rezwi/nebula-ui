@@ -485,8 +485,8 @@ VITE_CLIENT_PORT=3000
 # Local development
 VITE_API_BASE_URL=http://localhost:3001
 
-# Production (Render.com example)
-# VITE_API_BASE_URL=https://nebula-api-unq7.onrender.com
+# Production (DigitalOcean example)
+# VITE_API_BASE_URL=https://api.betterdev.in
 
 # Production (Your custom domain)
 # VITE_API_BASE_URL=https://api.your-domain.com
