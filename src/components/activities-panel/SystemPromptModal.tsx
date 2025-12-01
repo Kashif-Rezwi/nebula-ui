@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogFooter, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger, 
-  DialogClose 
+import {
+  Dialog,
+  DialogFooter,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
 } from '../ui/dialog';
 import { FiEdit2 } from "react-icons/fi";
 import { Button } from '../ui/button';
@@ -18,7 +18,8 @@ import { Textarea } from '../ui/textarea';
 export function SystemPromptModal({
   initialInstructions,
   onSave,
-  isSaving = false
+  isSaving = false,
+  isDraft = false
 }: SystemPromptModalProps) {
   const [instructions, setInstructions] = useState(initialInstructions);
   const maxInputLength = 2000;
@@ -50,7 +51,7 @@ export function SystemPromptModal({
             Provide relevant instructions and information for chats within this conversation
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="flex-1 h-[60vh]">
           <Textarea
             defaultValue={initialInstructions}
@@ -75,12 +76,12 @@ export function SystemPromptModal({
             <DialogClose asChild>
               <div className="flex items-center gap-3">
                 <Button variant="outline">Cancel</Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className='bg-primary/80'
                   onClick={handleSave}
                 >
-                  Save changes
+                  {isDraft ? 'Set for New Chat' : 'Save changes'}
                 </Button>
               </div>
             </DialogClose>

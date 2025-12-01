@@ -8,14 +8,14 @@ import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useCreateConversationWithMessage } from '../../hooks/conversations';
 import { useScrollToMessage } from '../../hooks/useScrollToMessage';
-import type { UIMessage, ChatRouterState } from '@/types';
+import type { UIMessage, ChatRouterState, ChatAreaProps } from '@/types';
 import { ROUTES } from '../../constants';
 
-interface ChatAreaProps {
-  conversationId?: string;
-}
-
-export function ChatArea({ conversationId }: ChatAreaProps) {
+export function ChatArea({
+  conversationId,
+  draftSystemPrompt,
+  onDraftSystemPromptChange
+}: ChatAreaProps) {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     // Check if a new message was added
     if (messages.length > prevMessagesLengthRef.current) {
       const latestMessage = messages[messages.length - 1];
-      
+
       // ONLY scroll if the latest message is from the USER
       if (latestMessage.role === 'user') {
         // Wait a bit for the DOM to update, then scroll to the new message
@@ -63,7 +63,7 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
     prevMessagesLengthRef.current = messages.length;
   }, [messages, loading, scrollToMessage]);
 
-  const { mutateAsync: createConversationWithMessage, isPending: isCreating } = 
+  const { mutateAsync: createConversationWithMessage, isPending: isCreating } =
     useCreateConversationWithMessage();
 
   const handleSend = async () => {
@@ -83,7 +83,11 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         const result = await createConversationWithMessage({
           title: 'Untitled',
           firstMessage: messageText,
+          systemPrompt: draftSystemPrompt || undefined,
         });
+
+        // Clear draft system prompt after successful creation
+        onDraftSystemPromptChange?.('');
 
         // Navigate with state flag to trigger AI response
         navigate(ROUTES.CHAT_WITH_ID(result.id), {
@@ -163,8 +167,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         {/* At /chat/:id - Has messages */}
         {hasConversation && !loading && hasMessages && (
           <>
-            <MessageList 
-              messages={messages as UIMessage[]} 
+            <MessageList
+              messages={messages as UIMessage[]}
               isStreaming={status === 'streaming'}
             />
             <div ref={messagesEndRef} />

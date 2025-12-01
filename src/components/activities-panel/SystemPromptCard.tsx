@@ -7,17 +7,26 @@ import ReactMarkdown from 'react-markdown';
 export function SystemPromptCard({
     systemPrompt,
     onSaveSystemPrompt,
-    isSavingSystemPrompt
+    isSavingSystemPrompt,
+    isDraft
 }: SystemPromptCardProps) {
 
     return (
         <Card className="w-full border border-border bg-[#1a1a1a] rounded-2xl overflow-hidden!">
             <CardHeader className="flex flex-row items-center justify-between px-4 py-3">
-                <div className="text-foreground/80 m-0">Instructions</div>
+                <div className="flex items-center gap-2">
+                    <div className="text-foreground/80 m-0">Instructions</div>
+                    {isDraft && (
+                        <span className="text-xs text-foreground/50 bg-foreground/10 px-2 py-0.5 rounded">
+                            Draft
+                        </span>
+                    )}
+                </div>
                 <SystemPromptModal
                     initialInstructions={systemPrompt}
                     onSave={onSaveSystemPrompt}
                     isSaving={isSavingSystemPrompt}
+                    isDraft={isDraft}
                 />
             </CardHeader>
 

@@ -71,6 +71,8 @@ export interface StreamChunk {
 // Component Props Types
 export interface ChatAreaProps {
   conversationId?: string;
+  draftSystemPrompt?: string;
+  onDraftSystemPromptChange?: (prompt: string) => void;
 }
 
 export interface ActionsPanelProps {
@@ -81,6 +83,7 @@ export interface ActionsPanelProps {
 export interface ActivitiesPanelProps {
   conversationId?: string;
   systemPrompt: string;
+  draftSystemPrompt?: string;
   onSaveSystemPrompt: (systemPrompt: string) => void;
   isSavingSystemPrompt: boolean;
 }
@@ -89,12 +92,14 @@ export interface SystemPromptCardProps {
   systemPrompt: string;
   onSaveSystemPrompt: (systemPrompt: string) => void;
   isSavingSystemPrompt: boolean;
+  isDraft?: boolean;
 }
 
 export interface SystemPromptModalProps {
   initialInstructions: string;
   onSave: (systemPrompt: string) => void;
   isSaving?: boolean;
+  isDraft?: boolean;
 }
 
 export interface ProtectedRouteProps {
