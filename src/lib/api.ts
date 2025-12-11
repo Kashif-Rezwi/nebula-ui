@@ -31,14 +31,14 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem(STORAGE_KEYS.TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
-      
+
       // Only redirect if not already on auth pages
       const currentPath = window.location.pathname;
       if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
         window.location.href = ROUTES.LOGIN;
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

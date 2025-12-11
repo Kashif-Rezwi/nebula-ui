@@ -1,11 +1,15 @@
 // AI SDK v5 UIMessage type with typed metadata
 import type { UIMessage as BaseUIMessage } from '@ai-sdk/react';
 
+// Operational Mode Types
+export type OperationalMode = 'fast' | 'thinking' | 'auto';
+
 export interface UIMessage extends BaseUIMessage {
   metadata?: {
     createdAt?: string;
     toolCalls?: ToolCall[];
     sources?: WebSearchSource[];
+    operationalMode?: OperationalMode;
     [key: string]: unknown;
   };
 }
@@ -37,6 +41,7 @@ export interface Conversation {
   id: string;
   title: string;
   systemPrompt?: string;
+  operationalMode?: OperationalMode;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,6 +52,7 @@ export interface Message {
   content: string;
   createdAt: string;
   metadata?: {
+    operationalMode?: OperationalMode;
     toolCalls?: Array<{
       type: string;
       toolName?: string;

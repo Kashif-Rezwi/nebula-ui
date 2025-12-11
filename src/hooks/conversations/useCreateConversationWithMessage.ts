@@ -17,12 +17,14 @@ interface CreateConversationWithMessageParams {
   title?: string;
   firstMessage: string;
   systemPrompt?: string;
+  operationalMode?: string;
 }
 
 interface CreateConversationResponse {
   id: string;
   title: string;
   systemPrompt?: string;
+  operationalMode?: string;
   createdAt: string;
   updatedAt: string;
 }

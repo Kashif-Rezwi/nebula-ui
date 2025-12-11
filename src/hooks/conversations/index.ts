@@ -14,3 +14,4 @@ export { useUpdateConversation } from './useUpdateConversation';
 export { useDeleteConversation } from './useDeleteConversation';
 export { useGenerateTitle } from './useGenerateTitle';
 export { useUpdateSystemPrompt } from './useUpdateSystemPrompt';
+export { useUpdateOperationalMode } from './useUpdateOperationalMode';

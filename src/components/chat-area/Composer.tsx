@@ -1,4 +1,6 @@
 import { useCallback } from 'react';
+import { ModeSelector } from './ModeSelector';
+import type { OperationalMode } from '../../types';
 
 interface InputAreaProps {
   message: string;
@@ -8,6 +10,9 @@ interface InputAreaProps {
   disabled?: boolean;
   isStreaming?: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  currentMode?: OperationalMode;
+  onModeChange?: (mode: OperationalMode) => void;
+  showModeSelector?: boolean;
 }
 
 export function Composer({
@@ -18,6 +23,9 @@ export function Composer({
   disabled = false,
   isStreaming = false,
   textareaRef,
+  currentMode = 'auto',
+  onModeChange,
+  showModeSelector = false,
 }: InputAreaProps) {
   // Callback ref that focuses whenever the element is attached/updated
   const callbackRef = useCallback((node: HTMLTextAreaElement | null) => {
@@ -53,7 +61,7 @@ export function Composer({
                 className="w-full bg-transparent text-[15px] text-white focus:outline-none resize-none overflow-y-auto placeholder:text-[#666666] leading-6"
                 rows={1}
                 style={{ minHeight: '24px', maxHeight: '200px' }}
-                // disabled={disabled || isStreaming}
+              // disabled={disabled || isStreaming}
               />
             </div>
 
@@ -89,23 +97,20 @@ export function Composer({
 
               {/* Right Side - 2 Buttons */}
               <div className="flex items-center gap-2">
-                {/* Model Selector */}
-                <button
-                  disabled
-                  className="h-8 px-3 rounded-lg text-sm text-[#cccccc] hover:bg-white/10 transition-colors flex items-center gap-1 disabled:cursor-not-allowed"
-                  title="Model (Coming soon)"
-                >
-                  Llama-3.1-8b-instant
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+                {/* Mode Selector */}
+                {showModeSelector && onModeChange && (
+                  <ModeSelector
+                    currentMode={currentMode}
+                    onModeChange={onModeChange}
+                    disabled={disabled || isStreaming}
+                  />
+                )}
 
                 {/* Send Button with Status Indicator */}
                 <div className="relative">
                   {/* Status Indicator */}
                   <div className="absolute -top-1 -right-1 w-2 h-2 bg-teal-400 rounded-full"></div>
-                  
+
                   {/* Send Button */}
                   <button
                     onClick={onSend}

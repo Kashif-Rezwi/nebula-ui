@@ -1,6 +1,7 @@
 import { DefaultChatTransport } from "ai";
 import { API_CONFIG } from "../constants";
 import { storage } from "../utils";
+import type { OperationalMode } from "../types";
 
 export function createChatTransport(conversationId: string) {
     if (!conversationId) {
@@ -18,8 +19,16 @@ export function createChatTransport(conversationId: string) {
         },
         credentials: "include",
         prepareSendMessagesRequest: ({ messages }) => {
+            // Read current mode from localStorage when sending message
+            const modeKey = `conversation_mode_${conversationId}`;
+            const currentMode = localStorage.getItem(modeKey) as OperationalMode | null;
+
             return {
-                body: { messages }
+                body: {
+                    messages,
+                    // Include mode if user has selected one
+                    ...(currentMode && { modeOverride: currentMode })
+                }
             };
         },
     });

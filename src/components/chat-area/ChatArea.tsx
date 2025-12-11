@@ -6,9 +6,9 @@ import { Greeting } from './Greeting';
 import { ChatSkeleton } from './ChatSkeleton';
 import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
-import { useCreateConversationWithMessage } from '../../hooks/conversations';
+import { useCreateConversationWithMessage, useConversation } from '../../hooks/conversations';
 import { useScrollToMessage } from '../../hooks/useScrollToMessage';
-import type { UIMessage, ChatRouterState, ChatAreaProps } from '@/types';
+import type { UIMessage, ChatRouterState, ChatAreaProps, OperationalMode } from '@/types';
 import { ROUTES } from '../../constants';
 
 export function ChatArea({
@@ -20,6 +20,17 @@ export function ChatArea({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
   const prevMessagesLengthRef = useRef(0);
+
+  // Store mode in localStorage for persistence across page refreshes
+  const getModeKey = (id: string) => `conversation_mode_${id}`;
+
+  // Get initial mode from localStorage or conversation data
+  const [currentMode, setCurrentMode] = useState<OperationalMode>(() => {
+    if (conversationId) {
+      return (localStorage.getItem(getModeKey(conversationId)) as OperationalMode) || 'auto';
+    }
+    return 'auto';
+  });
 
   const {
     messages,
@@ -66,6 +77,60 @@ export function ChatArea({
   const { mutateAsync: createConversationWithMessage, isPending: isCreating } =
     useCreateConversationWithMessage();
 
+  const { data: conversation } = useConversation(conversationId || '');
+
+  // Update mode state when navigating to a different conversation
+  useEffect(() => {
+    if (conversationId) {
+      const storedMode = localStorage.getItem(getModeKey(conversationId)) as OperationalMode;
+
+      if (storedMode) {
+        // Priority 1: Use user's manually selected mode from localStorage
+        setCurrentMode(storedMode);
+      } else if (conversation?.operationalMode) {
+        // Priority 2: Use server value (conversation's last mode)
+        setCurrentMode(conversation.operationalMode);
+        // Store it for next time
+        localStorage.setItem(getModeKey(conversationId), conversation.operationalMode);
+      }
+      // If neither exists, keep current state (don't reset to 'auto')
+    } else {
+      // At /new route - reset to 'auto' for new conversations
+      setCurrentMode('auto');
+    }
+  }, [conversationId, conversation?.operationalMode]);
+
+  // Sync mode with server if it changes (e.g., from another tab or external update)
+  useEffect(() => {
+    if (conversation?.operationalMode && conversationId) {
+      const serverMode = conversation.operationalMode;
+      const localMode = localStorage.getItem(getModeKey(conversationId)) as OperationalMode;
+
+      // Only update if server mode exists and differs from local
+      if (serverMode && localMode !== serverMode) {
+        // Don't override user's manual selection unless explicitly needed
+        // This is mainly for syncing when mode is changed externally
+        console.log(`[Mode Sync] Server has "${serverMode}", local has "${localMode || 'none'}"`);
+
+        // Only sync if user hasn't manually set a mode (localStorage is empty)
+        if (!localMode) {
+          localStorage.setItem(getModeKey(conversationId), serverMode);
+          setCurrentMode(serverMode);
+        }
+      }
+    }
+  }, [conversation?.operationalMode, conversationId]);
+
+  // Handle mode change - only update local state
+  const handleModeChange = (newMode: OperationalMode) => {
+    setCurrentMode(newMode);
+    if (conversationId) {
+      // Store in localStorage for persistence
+      localStorage.setItem(getModeKey(conversationId), newMode);
+    }
+    // No API call here! Mode will be sent with next message
+  };
+
   const handleSend = async () => {
     if (!message.trim()) return;
 
@@ -84,10 +149,17 @@ export function ChatArea({
           title: 'Untitled',
           firstMessage: messageText,
           systemPrompt: draftSystemPrompt || undefined,
+          operationalMode: currentMode,
         });
+
+        // Store mode in localStorage ONLY for the new conversation ID
+        localStorage.setItem(getModeKey(result.id), currentMode);
 
         // Clear draft system prompt after successful creation
         onDraftSystemPromptChange?.('');
+
+        // Update state with the new conversation ID's mode
+        setCurrentMode(currentMode);
 
         // Navigate with state flag to trigger AI response
         navigate(ROUTES.CHAT_WITH_ID(result.id), {
@@ -133,6 +205,9 @@ export function ChatArea({
                   disabled={isCreating}
                   isStreaming={false}
                   textareaRef={textareaRef}
+                  currentMode={currentMode}
+                  onModeChange={handleModeChange}
+                  showModeSelector={true}
                 />
               </div>
             </div>
@@ -158,6 +233,9 @@ export function ChatArea({
                   disabled={isDisabled}
                   isStreaming={false}
                   textareaRef={textareaRef}
+                  currentMode={currentMode}
+                  onModeChange={handleModeChange}
+                  showModeSelector={hasConversation}
                 />
               </div>
             </div>
@@ -195,6 +273,9 @@ export function ChatArea({
             disabled={isDisabled}
             isStreaming={isStreamingOrCreating}
             textareaRef={textareaRef}
+            currentMode={currentMode}
+            onModeChange={handleModeChange}
+            showModeSelector={true}
           />
         </div>
       )}

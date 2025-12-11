@@ -4,6 +4,7 @@ import { format } from '../../utils';
 import { useAuth } from '../../hooks/useAuth';
 import { MessageActions } from './MessageActions';
 import { ToolCallStatus } from './ToolCallStatus';
+import { ModeIndicator } from './ModeIndicator';
 import type { UIMessage, WebSearchSource, SearchSummary } from '../../types';
 
 interface MessageListProps {
@@ -12,12 +13,12 @@ interface MessageListProps {
 }
 
 // Helper to parse tool output into sources AND summary
-function parseToolOutput(output: any): { 
-  sources: WebSearchSource[]; 
+function parseToolOutput(output: any): {
+  sources: WebSearchSource[];
   summary?: SearchSummary;
 } {
   if (!output) return { sources: [] };
-  
+
   try {
     // Check if it's web search results
     if (output.results && Array.isArray(output.results)) {
@@ -32,9 +33,9 @@ function parseToolOutput(output: any): {
       // Extract summary if available
       const summary = output.summary && output.citations
         ? {
-            text: output.summary,
-            citations: output.citations,
-          }
+          text: output.summary,
+          citations: output.citations,
+        }
         : undefined;
 
       return { sources, summary };
@@ -42,12 +43,12 @@ function parseToolOutput(output: any): {
   } catch (error) {
     console.error('Failed to parse tool output:', error);
   }
-  
+
   return { sources: [] };
 }
 
-export function MessageList({ 
-  messages, 
+export function MessageList({
+  messages,
   // isStreaming,
 }: MessageListProps) {
   const { getUser } = useAuth();
@@ -74,21 +75,21 @@ export function MessageList({
       const topSpace = 16;
       const totalSpaceBetweenMessages = 48;
       const padding = Math.max(168, window.innerHeight - totalHeight - totalSpaceBetweenMessages - topSpace);
-      
+
       setDynamicPadding(padding);
     };
 
     calculatePadding();
     const rafId = requestAnimationFrame(calculatePadding);
-    
+
     const observer = new ResizeObserver(() => requestAnimationFrame(calculatePadding));
     const container = document.querySelector('[data-messages-container]');
-    
+
     container?.querySelectorAll('[data-message-id]')
       .forEach((el, i, arr) => i >= arr.length - 2 && observer.observe(el));
-    
+
     window.addEventListener('resize', calculatePadding);
-    
+
     return () => {
       cancelAnimationFrame(rafId);
       observer.disconnect();
@@ -103,9 +104,9 @@ export function MessageList({
   })));
 
   return (
-    <div 
+    <div
       data-messages-container
-      className="max-w-3xl mx-auto px-4 pt-4" 
+      className="max-w-3xl mx-auto px-4 pt-4"
       style={{ paddingBottom: `${dynamicPadding}px` }}
     >
       {/* Top gradient fade */}
@@ -114,11 +115,11 @@ export function MessageList({
       {/* Messages */}
       <div className="flex flex-col gap-6">
         {messages.map((msg, index) => (
-          <div 
-            key={msg.id} 
+          <div
+            key={msg.id}
             data-message-id={msg.id}
             data-role={msg.role}
-            className="animate-fade-in" 
+            className="animate-fade-in"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             {msg.role === 'user' ? (
@@ -153,66 +154,71 @@ export function MessageList({
                           <ReactMarkdown>{part.text}</ReactMarkdown>
                         </div>
                       );
-                    
+
                     case 'tool-tavily_web_search': {
                       const { sources, summary } = parseToolOutput(
                         part.state === 'output-available' ? part.output : undefined
                       );
-                      
+
                       return (
                         <ToolCallStatus
                           key={partIndex}
                           toolName="tavily_web_search"
                           status={
                             part.state === 'output-available' ? 'success' :
-                            part.state === 'output-error' ? 'error' : 'pending'
+                              part.state === 'output-error' ? 'error' : 'pending'
                           }
                           sources={sources}
                           summary={summary}
                           error={
-                            part.state === 'output-error' 
-                              ? part.errorText 
+                            part.state === 'output-error'
+                              ? part.errorText
                               : undefined
                           }
                         />
                       );
                     }
-                    
+
                     case 'dynamic-tool': {
                       const { sources, summary } = parseToolOutput(
                         part.state === 'output-available' ? part.output : undefined
                       );
-                      
+
                       return (
                         <ToolCallStatus
                           key={partIndex}
                           toolName={part.toolName}
                           status={
                             part.state === 'output-available' ? 'success' :
-                            part.state === 'output-error' ? 'error' : 'pending'
+                              part.state === 'output-error' ? 'error' : 'pending'
                           }
                           sources={sources}
                           summary={summary}
                           error={
-                            part.state === 'output-error' 
-                              ? part.errorText 
+                            part.state === 'output-error'
+                              ? part.errorText
                               : undefined
                           }
                         />
                       );
                     }
-                    
+
                     default:
                       return null;
                   }
                 })}
-                            
+
                 {msg.metadata?.createdAt && (
-                  <div
-                    className="text-xs text-foreground/40 mt-1"
-                    title={format.formatFullDateTime(msg.metadata.createdAt)}
-                  >
-                    {format.formatRelativeTime(msg.metadata.createdAt)}
+                  <div className="flex items-center gap-2 mt-1">
+                    <div
+                      className="text-xs text-foreground/40"
+                      title={format.formatFullDateTime(msg.metadata.createdAt)}
+                    >
+                      {format.formatRelativeTime(msg.metadata.createdAt)}
+                    </div>
+                    {msg.metadata?.operationalMode && (
+                      <ModeIndicator mode={msg.metadata.operationalMode} />
+                    )}
                   </div>
                 )}
                 <MessageActions content={getMessageText(msg)} />
