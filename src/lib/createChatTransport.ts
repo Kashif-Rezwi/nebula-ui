@@ -19,9 +19,14 @@ export function createChatTransport(conversationId: string) {
         },
         credentials: "include",
         prepareSendMessagesRequest: ({ messages }) => {
-            // Read current mode from localStorage when sending message
-            const modeKey = `conversation_mode_${conversationId}`;
-            const currentMode = localStorage.getItem(modeKey) as OperationalMode | null;
+            // Read current mode from localStorage safely when sending message
+            let currentMode: OperationalMode | null = null;
+            try {
+                const modeKey = `conversation_mode_${conversationId}`;
+                currentMode = localStorage.getItem(modeKey) as OperationalMode | null;
+            } catch (e) {
+                console.warn('[Chat Transport] LocalStorage access failed:', e);
+            }
 
             return {
                 body: {
