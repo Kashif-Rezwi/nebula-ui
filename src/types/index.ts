@@ -70,6 +70,7 @@ export interface Message {
       state: 'pending' | 'output-available' | 'output-error';
       output?: any;
       errorText?: string;
+      args?: any;
     }>;
     [key: string]: any;
   };

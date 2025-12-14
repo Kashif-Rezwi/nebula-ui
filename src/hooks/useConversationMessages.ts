@@ -4,6 +4,7 @@ import { useChat } from '@ai-sdk/react';
 import { conversationsApi } from '../lib/conversations';
 import { createChatTransport } from '../lib/createChatTransport';
 import { useGenerateTitle } from './conversations';
+import { toUIMessages } from '../lib/messageUtils';
 import type { UIMessage, ChatRouterState } from '../types';
 
 export function useConversationMessages(conversationId?: string) {
@@ -41,7 +42,7 @@ export function useConversationMessages(conversationId?: string) {
   // Simple auto-trigger with ref to prevent duplicates
   useEffect(() => {
     const routerState = location.state as ChatRouterState | null;
-    
+
     // Only trigger once using ref
     if (
       routerState?.shouldAutoTrigger &&
@@ -54,10 +55,10 @@ export function useConversationMessages(conversationId?: string) {
     ) {
       // Mark as triggered
       hasTriggeredRef.current = true;
-      
+
       // Clear the flag
       window.history.replaceState({}, document.title);
-      
+
       // Trigger AI response by sending the user message
       const userMessage = messages[0];
       const messageText = userMessage.parts
@@ -69,7 +70,7 @@ export function useConversationMessages(conversationId?: string) {
       if (setMessages && sendMessage) {
         // Temporarily clear messages
         setMessages([]);
-        
+
         // Use setTimeout to ensure state update completes
         setTimeout(() => {
           // Now send - no duplicate because array is empty!
@@ -93,45 +94,7 @@ export function useConversationMessages(conversationId?: string) {
       setLoading(true);
       const conversation = await conversationsApi.getConversation(conversationId);
 
-      const uiMessages: UIMessage[] = (conversation.messages || []).map((msg) => {
-        // Start with text part
-        const parts: any[] = [{ type: 'text', text: msg.content }];
-
-        // Reconstruct tool parts from metadata (if exists)
-        if (msg.metadata?.toolCalls && Array.isArray(msg.metadata.toolCalls)) {
-          msg.metadata.toolCalls.forEach((toolCall) => {
-            // Create the base tool part structure
-            const toolPart: Record<string, any> = {
-              type: toolCall.type,
-              state: toolCall.state,
-            };
-
-            // Add toolName if it's a dynamic tool
-            if (toolCall.type === 'dynamic-tool' && toolCall.toolName) {
-              toolPart.toolName = toolCall.toolName;
-            }
-
-            // Add output or error based on state
-            if (toolCall.state === 'output-available' && toolCall.output) {
-              toolPart.output = toolCall.output;
-            } else if (toolCall.state === 'output-error' && toolCall.errorText) {
-              toolPart.errorText = toolCall.errorText;
-            }
-
-            parts.push(toolPart);
-          });
-        }
-
-        // Return UIMessage with proper structure
-        return {
-          id: msg.id,
-          role: msg.role,
-          parts,
-          metadata: { 
-            createdAt: msg.createdAt,
-          },
-        } as UIMessage;
-      });
+      const uiMessages: UIMessage[] = toUIMessages(conversation.messages);
 
       if (setMessages) {
         setMessages(uiMessages);
