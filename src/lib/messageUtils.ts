@@ -48,16 +48,8 @@ export function toUIMessage(msg: Message): UIMessage {
         role: msg.role,
         parts,
         metadata: {
-            ...msg.metadata,
             createdAt: msg.createdAt,
-            // Explicitly map critical fields
-            operationalMode: msg.metadata?.operationalMode,
-            effectiveMode: msg.metadata?.effectiveMode,
-            modelUsed: msg.metadata?.modelUsed,
-            tokensUsed: msg.metadata?.tokensUsed,
-            temperature: msg.metadata?.temperature,
-            toolCalls: msg.metadata?.toolCalls,
-            sources: msg.metadata?.sources,
+            ...msg.metadata, // Spreads all metadata fields including mode info, toolCalls, sources
         },
     } as UIMessage;
 }

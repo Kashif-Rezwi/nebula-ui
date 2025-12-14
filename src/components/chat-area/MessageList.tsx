@@ -212,7 +212,10 @@ export function MessageList({
                 {(msg.metadata?.createdAt || msg.metadata?.effectiveMode) && (
                   <div className="flex items-center gap-2 mt-1">
                     {msg.metadata?.effectiveMode && (
-                      <ModeIndicator mode={msg.metadata.effectiveMode} />
+                      <ModeIndicator
+                        mode={msg.metadata.effectiveMode}
+                        wasAutoSelected={msg.metadata.operationalMode === 'auto'}
+                      />
                     )}
                     {msg.metadata?.createdAt && (
                       <div
