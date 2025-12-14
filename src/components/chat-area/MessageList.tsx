@@ -216,8 +216,14 @@ export function MessageList({
                     >
                       {format.formatRelativeTime(msg.metadata.createdAt)}
                     </div>
-                    {msg.metadata?.operationalMode && (
-                      <ModeIndicator mode={msg.metadata.operationalMode} />
+                    {msg.metadata?.effectiveMode && (
+                      <ModeIndicator
+                        mode={msg.metadata.effectiveMode}
+                        showDetails={true}
+                        modelUsed={msg.metadata.modelUsed}
+                        tokensUsed={msg.metadata.tokensUsed}
+                        temperature={msg.metadata.temperature}
+                      />
                     )}
                   </div>
                 )}

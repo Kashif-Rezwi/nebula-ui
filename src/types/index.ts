@@ -3,13 +3,19 @@ import type { UIMessage as BaseUIMessage } from '@ai-sdk/react';
 
 // Operational Mode Types
 export type OperationalMode = 'fast' | 'thinking' | 'auto';
+export type EffectiveMode = 'fast' | 'thinking';
 
 export interface UIMessage extends BaseUIMessage {
   metadata?: {
     createdAt?: string;
     toolCalls?: ToolCall[];
     sources?: WebSearchSource[];
-    operationalMode?: OperationalMode;
+    // NEW: Mode information
+    operationalMode?: OperationalMode;     // What was requested ('fast' | 'thinking' | 'auto')
+    effectiveMode?: EffectiveMode;         // What was actually used
+    modelUsed?: string;                    // AI model name
+    tokensUsed?: number;                   // Token count
+    temperature?: number;                  // Temperature setting
     [key: string]: unknown;
   };
 }
@@ -41,7 +47,6 @@ export interface Conversation {
   id: string;
   title: string;
   systemPrompt?: string;
-  operationalMode?: OperationalMode;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,7 +57,13 @@ export interface Message {
   content: string;
   createdAt: string;
   metadata?: {
-    operationalMode?: OperationalMode;
+    // NEW: Mode information
+    operationalMode?: OperationalMode;     // What was requested ('fast' | 'thinking' | 'auto')
+    effectiveMode?: 'fast' | 'thinking';   // What was actually used
+    modelUsed?: string;                    // AI model name
+    tokensUsed?: number;                   // Token count
+    temperature?: number;                  // Temperature setting
+
     toolCalls?: Array<{
       type: string;
       toolName?: string;

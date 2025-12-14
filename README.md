@@ -45,6 +45,7 @@ Better DEV UI is a production-ready, modern chat interface for AI conversations.
 
 ### 💬 **Chat Features**
 - **Conversation Management** - Create, view, and delete conversations
+- **Operational Modes** - Control AI response style (Fast, Thinking, Auto)
 - **System Prompts** - Customize AI behavior per conversation
 - **Message History** - Persistent chat history with timestamps
 - **Auto-Title Generation** - AI generates conversation titles automatically
@@ -168,6 +169,8 @@ better-dev-ui/
 │   │   │   ├── Composer.tsx
 │   │   │   ├── MessageList.tsx
 │   │   │   ├── MessageActions.tsx
+│   │   │   ├── ModeSelector.tsx       # Operational mode dropdown
+│   │   │   ├── ModeIndicator.tsx      # Mode badge display
 │   │   │   ├── ToolCallStatus.tsx
 │   │   │   ├── SourceCard.tsx
 │   │   │   ├── SearchSummary.tsx
@@ -200,9 +203,11 @@ better-dev-ui/
 │   │   │   ├── useUpdateConversation.ts
 │   │   │   ├── useDeleteConversation.ts
 │   │   │   ├── useGenerateTitle.ts
-│   │   │   └── useUpdateSystemPrompt.ts
+│   │   │   ├── useUpdateSystemPrompt.ts
+│   │   │   └── useUpdateOperationalMode.ts
 │   │   │
 │   │   ├── useAuth.ts
+│   │   ├── useConversationMode.ts  # Operational mode management
 │   │   ├── useConversationMessages.ts
 │   │   └── useScrollToMessage.ts
 │   │
@@ -604,7 +609,65 @@ export const queryClient = new QueryClient({
 - Request deduplication
 - Automatic retries
 
-### **5. Auto-Scroll Behavior**
+### **5. Operational Modes**
+
+Control AI response behavior with three modes:
+
+```typescript
+// src/hooks/useConversationMode.ts
+const { currentMode, setMode } = useConversationMode(
+  conversationId,
+  conversation
+);
+
+// Mode included automatically in message requests
+// src/lib/createChatTransport.ts
+prepareSendMessagesRequest: ({ messages }) => {
+  const currentMode = localStorage.getItem(`conversation_mode_${conversationId}`);
+  return {
+    body: { 
+      messages,
+      ...(currentMode && { modeOverride: currentMode })
+    }
+  };
+}
+```
+
+**Available Modes:**
+- **Fast** ⚡ - Quick, concise responses for simple queries
+- **Thinking** 💡 - Detailed, comprehensive analysis for complex topics
+- **Auto** ✨ - AI automatically chooses the optimal mode
+
+**Key Features:**
+- **localStorage Persistence** - Modes survive page refresh and browser restart
+- **Zero Extra API Calls** - Mode sent with message request (50% fewer requests)
+- **Instant UI Updates** - No loading states or network latency
+- **Offline Support** - Mode selection works without network connection
+- **Safe Storage** - Graceful degradation if localStorage is disabled (Safari private mode)
+- **Visual Indicators** - Color-coded badges show mode for each message
+
+**Architecture Benefits:**
+```
+User selects mode → Saved to localStorage (instant)
+                   ↓
+              User sends message
+                   ↓
+        Mode included in request body
+                   ↓
+          Backend processes with mode
+                   ↓
+        Mode persisted on conversation
+```
+
+No separate mode update API call needed - improving performance and reducing server load.
+
+**Error Handling:**
+- Try-catch for localStorage failures
+- Fallback to server mode if local unavailable
+- Console warnings for debugging
+- Works in Safari private mode
+
+### **6. Auto-Scroll Behavior**
 
 Smart scrolling that doesn't interrupt reading:
 

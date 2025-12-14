@@ -13,7 +13,7 @@ export function useConversationMessages(conversationId?: string) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { mutateAsync: generateTitle } = useGenerateTitle();
   const location = useLocation();
-  
+
   // Use ref to prevent re-triggering
   const hasTriggeredRef = useRef(false);
 

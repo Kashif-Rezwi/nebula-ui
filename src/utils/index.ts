@@ -177,3 +177,9 @@ export const async = {
 export const cn = (...classes: (string | boolean | undefined | null)[]): string => {
   return classes.filter(Boolean).join(' ');
 };
+
+/**
+ * Mode preference utilities
+ * Re-exported for convenience
+ */
+export { modePreference } from './modePreference';

@@ -77,7 +77,7 @@ export function ModeSelector({ currentMode, onModeChange, disabled = false }: Mo
                 sideOffset={8}
             >
                 <DropdownMenuLabel className="px-2 py-1.5 text-xs text-foreground/60 font-medium">
-                    Conversation mode
+                    Conversation Mode
                 </DropdownMenuLabel>
 
                 <DropdownMenuSeparator className="bg-border" />

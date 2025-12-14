@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { ModeSelector } from './ModeSelector';
-import type { OperationalMode } from '../../types';
+import { useModePreference } from '../../hooks/useModePreference';
 
 interface InputAreaProps {
   message: string;
@@ -10,8 +10,6 @@ interface InputAreaProps {
   disabled?: boolean;
   isStreaming?: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-  currentMode?: OperationalMode;
-  onModeChange?: (mode: OperationalMode) => void;
   showModeSelector?: boolean;
 }
 
@@ -23,10 +21,10 @@ export function Composer({
   disabled = false,
   isStreaming = false,
   textareaRef,
-  currentMode = 'auto',
-  onModeChange,
   showModeSelector = false,
 }: InputAreaProps) {
+  // Use centralized mode preference hook
+  const { mode: selectedMode, setMode: setSelectedMode } = useModePreference();
   // Callback ref that focuses whenever the element is attached/updated
   const callbackRef = useCallback((node: HTMLTextAreaElement | null) => {
     if (node) node.focus();
@@ -98,10 +96,10 @@ export function Composer({
               {/* Right Side - 2 Buttons */}
               <div className="flex items-center gap-2">
                 {/* Mode Selector */}
-                {showModeSelector && onModeChange && (
+                {showModeSelector && (
                   <ModeSelector
-                    currentMode={currentMode}
-                    onModeChange={onModeChange}
+                    currentMode={selectedMode}
+                    onModeChange={setSelectedMode}
                     disabled={disabled || isStreaming}
                   />
                 )}

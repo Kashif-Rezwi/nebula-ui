@@ -8,6 +8,7 @@ export const API_CONFIG = {
   export const STORAGE_KEYS = {
     TOKEN: 'token',
     USER: 'user',
+    USER_MODE_PREFERENCE: 'user_mode_preference',
   } as const;
   
 // Route Paths
