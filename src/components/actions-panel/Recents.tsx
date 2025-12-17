@@ -11,11 +11,11 @@ interface RecentsProps {
     handleDeleteConversation: (conversationId: string) => void;
 }
 
-export function Recents({ 
-    loading, 
-    conversations, 
-    currentConversationId, 
-    handleConversationClick, 
+export function Recents({
+    loading,
+    conversations,
+    currentConversationId,
+    handleConversationClick,
     handleDeleteConversation }: RecentsProps) {
 
     return (
@@ -23,12 +23,12 @@ export function Recents({
             <div className="text-xs font-medium text-foreground/50 px-2">
                 Recents
             </div>
-            
+
             {/* Wrapper with fade effect */}
             <div className="relative max-h-[calc(100vh-250px)]">
                 {/* Top fade overlay - match sidebar bg color */}
                 <div className="absolute top-0 left-0 right-0 h-[10px] bg-gradient-to-b from-[#1a1a1a] via-[#1a1a1a]/80 to-transparent pointer-events-none z-10" />
-                
+
                 {/* Scrollable content */}
                 <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
                     {loading ? (
@@ -39,12 +39,12 @@ export function Recents({
                         </div>
                     ) : (
                         <div className="flex flex-col gap-2 pt-2 pb-[68px]">
-                            {conversations.map((conv, index) => (
+                            {conversations?.map((conv, index) => (
                                 <div
                                     key={conv.id}
                                     className={`relative group flex items-center gap-2 px-3 py-2 text-sm rounded-lg cursor-pointer transition-smooth animate-fade-in ${currentConversationId === conv.id
-                                            ? 'bg-[#262626] text-foreground'
-                                            : 'hover:bg-[#262626] text-foreground/80'
+                                        ? 'bg-[#262626] text-foreground'
+                                        : 'hover:bg-[#262626] text-foreground/80'
                                         }`}
                                     style={{ animationDelay: `${index * 0.03}s` }}
                                     onClick={() => handleConversationClick(conv.id)}
@@ -74,7 +74,7 @@ export function Recents({
                         </div>
                     )}
                 </div>
-                
+
             </div>
 
         </div>
