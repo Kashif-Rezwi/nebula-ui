@@ -113,6 +113,7 @@ export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  parts?: any[]; // Allow parts from backend
   createdAt: string;
   metadata?: {
     // NEW: Mode information

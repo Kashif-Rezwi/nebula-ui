@@ -8,10 +8,14 @@ import type { UIMessage, Message } from '../types';
  * @returns A UI-compatible message object with properly formatted parts and metadata
  */
 export function toUIMessage(msg: Message): UIMessage {
-    // 1. Handle potential null content safely
-    const parts: any[] = [
-        { type: 'text', text: msg.content || '' }
-    ];
+    let parts: any[] = [];
+
+    // 1. Use parts if available (multi-modal), otherwise fallback to content (legacy/text-only)
+    if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
+        parts = [...msg.parts];
+    } else {
+        parts = [{ type: 'text', text: msg.content || '' }];
+    }
 
     // 2. Strict checks on toolCalls existence
     if (msg.metadata?.toolCalls && Array.isArray(msg.metadata.toolCalls)) {
