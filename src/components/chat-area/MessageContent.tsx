@@ -1,0 +1,82 @@
+import { IoDocumentTextOutline } from 'react-icons/io5';
+import ReactMarkdown from 'react-markdown';
+import type { UIMessage } from '../../types';
+
+interface MessageContentProps {
+  message: UIMessage;
+  variant: 'user' | 'assistant';
+}
+
+export function MessageContent({ message, variant }: MessageContentProps) {
+  const parts = (message as any).parts || [];
+  const partsToRender = Array.isArray(parts) && parts.length > 0 ? parts : [];
+
+  if (partsToRender.length === 0) {
+    return null;
+  }
+
+  return (
+    <>
+      {partsToRender.map((part: any, idx: number) => {
+        // Text part
+        if (part.type === 'text') {
+          return variant === 'user' ? (
+            <div key={idx} className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
+              {part.text}
+            </div>
+          ) : (
+            <div key={idx} className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>{part.text}</ReactMarkdown>
+            </div>
+          );
+        }
+
+        // Image part
+        if (part.type === 'image') {
+          const imageUrl = part.url || part.image;
+          return (
+            <div key={idx} className={variant === 'assistant' ? 'my-3' : ''}>
+              <img
+                src={imageUrl}
+                alt={variant === 'user' ? 'Uploaded image' : 'AI-provided image'}
+                className={
+                  variant === 'user'
+                    ? 'max-w-sm rounded-lg border border-primary/30 cursor-pointer hover:opacity-90 transition-opacity'
+                    : 'max-w-full max-h-96 rounded-lg border border-[#2a2a2a] cursor-pointer hover:opacity-90 transition-opacity'
+                }
+                onClick={() => window.open(imageUrl, '_blank')}
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23333" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%23999" font-size="14"%3EImage failed to load%3C/text%3E%3C/svg%3E';
+                  e.currentTarget.classList.add('opacity-50', 'cursor-not-allowed');
+                }}
+              />
+            </div>
+          );
+        }
+
+        // File part
+        if (part.type === 'file') {
+          return (
+            <div
+              key={idx}
+              className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-lg p-3 max-w-sm"
+            >
+              <div className="w-10 h-10 rounded bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <IoDocumentTextOutline className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate" title={part.text}>
+                  {part.text}
+                </p>
+                <p className="text-xs text-foreground/60 uppercase">{part.fileType || 'DOC'}</p>
+              </div>
+            </div>
+          );
+        }
+
+        return null;
+      })}
+    </>
+  );
+}

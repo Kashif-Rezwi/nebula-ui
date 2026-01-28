@@ -77,7 +77,7 @@ export function useConversationMessages(conversationId?: string) {
           sendMessage({
             role: 'user',
             parts: [{ type: 'text', text: messageText }],
-          });
+          } as any);
         }, 0);
       }
 
@@ -138,20 +138,25 @@ export function useConversationMessages(conversationId?: string) {
         }
 
         // Add image/file parts from uploaded attachments
-        attachments.forEach(att => {
-          if (att.uploadedUrl && att.status === 'uploaded') {
+        for (const att of attachments) {
+          if (att.status === 'uploaded') {
             if (att.type === 'image') {
-              // Validate URL before adding
+              // Convert image to Base64 as per "Key Constraints" in Integration Guide
               try {
-                new URL(att.uploadedUrl);
+                const base64 = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(att.file);
+                  reader.onload = () => resolve(reader.result as string);
+                  reader.onerror = reject;
+                });
+                
                 parts.push({
                   type: 'image',
-                  image: att.uploadedUrl,  // AI SDK standard field
-                  url: att.uploadedUrl,     // Also include for compatibility
-                  ...(att.attachmentId && { attachmentId: att.attachmentId }), // Link to Attachment entity
+                  image: base64, // Must be Base64 as per guide
+                  ...(att.attachmentId && { attachmentId: att.attachmentId }), // Optional: Link to Attachment entity
                 });
               } catch (e) {
-                console.error('Invalid image URL:', att.uploadedUrl);
+                console.error('Failed to convert image to base64:', e);
               }
             } else if (att.type === 'file' && att.attachmentId) {
                 // Determine file type for UI
@@ -165,17 +170,18 @@ export function useConversationMessages(conversationId?: string) {
                 });
             }
           }
-        });
+        }
 
         // Ensure at least one part exists
         if (parts.length === 0) {
           parts.push({ type: 'text', text: '' });
         }
 
+        // AI SDK v5 UIMessage uses ONLY 'parts', no 'content' field
         sendMessage({
           role: 'user',
-          parts,
-        });
+          parts: parts,
+        } as any);
       }
 
       // Generate title if first message

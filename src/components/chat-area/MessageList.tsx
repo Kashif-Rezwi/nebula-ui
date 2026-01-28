@@ -1,9 +1,8 @@
 import { useState, useLayoutEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import { IoDocumentTextOutline } from 'react-icons/io5';
 import { format } from '../../utils';
 import { useAuth } from '../../hooks/useAuth';
 import { MessageActions } from './MessageActions';
+import { MessageContent } from './MessageContent';
 import { ToolCallStatus } from './ToolCallStatus';
 import { ModeIndicator } from './ModeIndicator';
 import type { UIMessage, WebSearchSource, SearchSummary } from '../../types';
@@ -48,20 +47,23 @@ function parseToolOutput(output: any): {
   return { sources: [] };
 }
 
-export function MessageList({
-  messages,
-  // isStreaming,
-}: MessageListProps) {
+export function MessageList({ messages }: MessageListProps) {
   const { getUser } = useAuth();
   const user = getUser();
   const [dynamicPadding, setDynamicPadding] = useState(168);
 
   const getMessageText = (msg: UIMessage): string => {
-    const partsOrContent = (msg as any).content || (msg as any).parts || [];
-    return partsOrContent
-      .filter((part: any) => part.type === 'text')
-      .map((part: any) => part.text)
-      .join('');
+    // AI SDK v5 UIMessage only uses 'parts', no 'content' field
+    const parts = (msg as any).parts || [];
+
+    if (Array.isArray(parts) && parts.length > 0) {
+      return parts
+        .filter((part: any) => part.type === 'text')
+        .map((part: any) => part.text)
+        .join('');
+    }
+
+    return '';
   };
 
   useLayoutEffect(() => {
@@ -99,12 +101,6 @@ export function MessageList({
     };
   }, [messages]);
 
-  console.log('📝 Messages:', messages.map(m => ({
-    id: m.id,
-    role: m.role,
-    parts: m.parts.map(p => ({ type: p.type }))
-  })));
-
   return (
     <div
       data-messages-container
@@ -134,53 +130,7 @@ export function MessageList({
 
                   {/* Message parts */}
                   <div className="space-y-2">
-                    {((msg as any).content || msg.parts || []).map((part: any, idx: number) => {
-                      if (part.type === 'text') {
-                        return (
-                          <div key={idx} className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
-                            {part.text}
-                          </div>
-                        );
-                      }
-                      // Handle image parts
-                      if (part.type === 'image') {
-                        const imageUrl = part.url || part.image;  // Support both 'url' (new) and 'image' (legacy)
-                        return (
-                          <img
-                            key={idx}
-                            src={imageUrl}
-                            alt="Uploaded image"
-                            className="max-w-sm rounded-lg border border-primary/30 cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => window.open(imageUrl, '_blank')}
-                            onError={(e) => {
-                              e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23333" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%23999" font-size="12"%3EImage failed%3C/text%3E%3C/svg%3E';
-                              e.currentTarget.classList.add('opacity-50');
-                            }}
-                          />
-                        );
-                      }
-                      
-                      // Handle file parts
-                      if (part.type === 'file') {
-                        return (
-                          <div key={idx} className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-lg p-3 max-w-sm">
-                             <div className="w-10 h-10 rounded bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                <IoDocumentTextOutline className="w-6 h-6 text-primary" />
-                             </div>
-                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate" title={part.text}>
-                                    {part.text}
-                                </p>
-                                <p className="text-xs text-foreground/60 uppercase">
-                                    {part.fileType || 'DOC'}
-                                </p>
-                             </div>
-                          </div>
-                        );
-                      }
-                      
-                      return null;
-                    })}
+                    <MessageContent message={msg} variant="user" />
                   </div>
                 </div>
                 {msg.metadata?.createdAt && (
@@ -196,41 +146,16 @@ export function MessageList({
               /* AI Message */
               <div className="group text-[15px] text-[#e8e8e8]">
                 {/* Render message parts */}
-                {((msg as any).content || msg.parts || []).map((part: any, partIndex: number) => {
-                  switch (part.type) {
-                    case 'text':
-                      return (
-                        <div key={partIndex} className="prose prose-invert prose-sm max-w-none">
-                          <ReactMarkdown>{part.text}</ReactMarkdown>
-                        </div>
-                      );
-
-                    // Handle image parts
-                    default:
-                      if ((part as any).type === 'image') {
-                        const imageUrl = (part as any).url || (part as any).image;  // Support both 'url' (new) and 'image' (legacy)
-                        return (
-                          <div key={partIndex} className="my-3">
-                            <img
-                              src={imageUrl}
-                              alt="AI-provided image"
-                              className="max-w-full max-h-96 rounded-lg border border-[#2a2a2a] cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => window.open(imageUrl, '_blank')}
-                              onError={(e) => {
-                                e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23333" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%23999" font-size="14"%3EImage failed to load%3C/text%3E%3C/svg%3E';
-                                e.currentTarget.classList.add('opacity-50', 'cursor-not-allowed');
-                              }}
-                            />
-                          </div>
-                        );
-                      }
-                      break;
-
-                    case 'tool-tavily_web_search': {
+                <MessageContent message={msg} variant="assistant" />
+                
+                {/* Render tool calls separately */}
+                {(() => {
+                  const parts = (msg as any).parts || [];
+                  return parts.map((part: any, partIndex: number) => {
+                    if (part.type === 'tool-tavily_web_search') {
                       const { sources, summary } = parseToolOutput(
                         part.state === 'output-available' ? part.output : undefined
                       );
-
                       return (
                         <ToolCallStatus
                           key={partIndex}
@@ -241,20 +166,15 @@ export function MessageList({
                           }
                           sources={sources}
                           summary={summary}
-                          error={
-                            part.state === 'output-error'
-                              ? part.errorText
-                              : undefined
-                          }
+                          error={part.state === 'output-error' ? part.errorText : undefined}
                         />
                       );
                     }
-
-                    case 'dynamic-tool': {
+                    
+                    if (part.type === 'dynamic-tool') {
                       const { sources, summary } = parseToolOutput(
                         part.state === 'output-available' ? part.output : undefined
                       );
-
                       return (
                         <ToolCallStatus
                           key={partIndex}
@@ -265,18 +185,14 @@ export function MessageList({
                           }
                           sources={sources}
                           summary={summary}
-                          error={
-                            part.state === 'output-error'
-                              ? part.errorText
-                              : undefined
-                          }
+                          error={part.state === 'output-error' ? part.errorText : undefined}
                         />
                       );
                     }
-
-
-                  }
-                })}
+                    
+                    return null;
+                  });
+                })()}
 
                 {/* Show timestamp and mode indicator */}
                 {(msg.metadata?.createdAt || msg.metadata?.effectiveMode) && (

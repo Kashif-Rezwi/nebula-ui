@@ -1,4 +1,4 @@
-import { IoFlashOutline, IoBulbOutline, IoEyeOutline, IoDocumentTextOutline } from 'react-icons/io5';
+import { IoFlashOutline, IoBulbOutline, IoEyeOutline } from 'react-icons/io5';
 import type { EffectiveMode } from '../../types';
 
 interface ModeIndicatorProps {
