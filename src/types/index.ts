@@ -3,9 +3,10 @@ import type { UIMessage as BaseUIMessage } from '@ai-sdk/react';
 
 // Operational Mode Types
 export type OperationalMode = 'fast' | 'thinking' | 'auto';
-export type EffectiveMode = 'fast' | 'thinking';
+export type EffectiveMode = 'fast' | 'thinking' | 'vision';
 
-export interface UIMessage extends BaseUIMessage {
+export interface UIMessage extends Omit<BaseUIMessage, 'parts'> {
+  parts: (TextPart | ImagePart | FilePart | ToolInvocationPart)[];
   metadata?: {
     createdAt?: string;
     toolCalls?: ToolCall[];
@@ -19,6 +20,63 @@ export interface UIMessage extends BaseUIMessage {
     [key: string]: unknown;
   };
 }
+
+export type TextPart = { type: 'text'; text: string };
+
+export type ImagePart = { 
+  type: 'image'; 
+  image: string | URL; // Base64 data URL or HTTP URL 
+};
+
+export type ToolInvocationPart = {
+    type: 'tool-invocation';
+    toolInvocation: {
+        toolCallId: string;
+        toolName: string;
+        args: unknown;
+        state: 'call' | 'result';
+        result?: unknown;
+    };
+};
+
+// Custom part for our backend (mapped to text/context on server)
+export type FilePart = { 
+  type: 'file'; 
+  text: string; // Client-side preview text (e.g. filename)
+  attachmentId: string; // ID returned from upload endpoint
+  fileType: 'pdf' | 'docx'; // For UI icons
+};
+
+// Attachment Types for Multi-Modal Messages
+export interface Attachment {
+  id: string;                    // Frontend temporary ID (use crypto.randomUUID())
+  file: File;                    // Original File object
+  previewUrl: string;            // Blob URL for local preview
+  uploadedUrl?: string;          // Server URL after upload
+  attachmentId?: string;         // Backend Attachment entity ID (from server)
+  status: 'pending' | 'uploading' | 'uploaded' | 'error';
+  progress?: number;             // Upload progress (0-100)
+  error?: string;                // Error message if failed
+  type: 'image' | 'file';        // Type of attachment
+}
+
+// Validation Constants
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+export const ALLOWED_IMAGE_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/gif',
+] as const;
+
+export const ALLOWED_DOC_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+] as const;
+
+export const ALLOWED_FILE_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOC_TYPES] as const;
+
 
 // Auth Types
 export interface User {

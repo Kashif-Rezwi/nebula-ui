@@ -1,4 +1,4 @@
-import { IoFlashOutline, IoBulbOutline } from 'react-icons/io5';
+import { IoFlashOutline, IoBulbOutline, IoEyeOutline, IoDocumentTextOutline } from 'react-icons/io5';
 import type { EffectiveMode } from '../../types';
 
 interface ModeIndicatorProps {
@@ -16,6 +16,11 @@ const MODE_DISPLAY: Record<EffectiveMode, { icon: React.ComponentType<{ classNam
         icon: IoBulbOutline,
         color: 'text-purple-400',
         label: 'Thinking',
+    },
+    vision: {
+        icon: IoEyeOutline,
+        color: 'text-emerald-400',
+        label: 'Vision',
     },
 };
 

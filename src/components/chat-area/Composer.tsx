@@ -1,6 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ModeSelector } from './ModeSelector';
+import { AttachmentPreview } from './AttachmentPreview';
 import { useModePreference } from '../../hooks/useModePreference';
+import type { Attachment } from '@/types';
 
 interface InputAreaProps {
   message: string;
@@ -11,6 +13,11 @@ interface InputAreaProps {
   isStreaming?: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   showModeSelector?: boolean;
+  // Attachment props
+  attachments?: Attachment[];
+  onAttachmentAdd?: (file: File) => void;
+  onAttachmentRemove?: (id: string) => void;
+  isUploading?: boolean;
 }
 
 export function Composer({
@@ -22,9 +29,17 @@ export function Composer({
   isStreaming = false,
   textareaRef,
   showModeSelector = false,
+  attachments = [],
+  onAttachmentAdd,
+  onAttachmentRemove,
+  isUploading = false,
 }: InputAreaProps) {
   // Use centralized mode preference hook
   const { mode: selectedMode, setMode: setSelectedMode } = useModePreference();
+
+  // File input ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Callback ref that focuses whenever the element is attached/updated
   const callbackRef = useCallback((node: HTMLTextAreaElement | null) => {
     if (node) node.focus();
@@ -35,15 +50,77 @@ export function Composer({
     };
   }, [isStreaming, disabled, textareaRef]);
 
+  // Handle drag and drop
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      // Handle multiple files
+      Array.from(e.dataTransfer.files).forEach(file => {
+        if (onAttachmentAdd) {
+            onAttachmentAdd(file);
+        }
+      });
+    }
+  };
+
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onAttachmentAdd) {
+      onAttachmentAdd(file);
+    }
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
+
   return (
     <div className="relative px-4 bt-0 pb-4">
       <div className="max-w-3xl mx-auto z-10">
-        <div className="bg-[#1a1a1a] rounded-2xl border border-[#2a2a2a] shadow-sm">
+        <div 
+          className={`bg-[#1a1a1a] rounded-2xl border transition-colors shadow-sm ${
+            isDragging ? 'border-primary bg-primary/10' : 'border-[#2a2a2a]'
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           {/* Wrapper with opacity transition - maintains dimensions */}
           <div
-            className="transition-opacity duration-300 opacity-100 pointer-events-auto}"
+            className="transition-opacity duration-300 opacity-100 pointer-events-auto"
           >
-            {/* Input Field - Top Section */}
+            {/* Attachment Previews - Show only if attachments exist */}
+            {attachments.length > 0 && (
+              <div className="p-4 pb-0">
+                <div className="flex flex-wrap gap-2">
+                  {attachments.map((attachment) => (
+                    <AttachmentPreview
+                      key={attachment.id}
+                      attachment={attachment}
+                      onRemove={onAttachmentRemove || (() => { })}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input Field */}
             <div className="p-4">
               <textarea
                 autoFocus
@@ -59,7 +136,6 @@ export function Composer({
                 className="w-full bg-transparent text-[15px] text-white focus:outline-none resize-none overflow-y-auto placeholder:text-[#666666] leading-6"
                 rows={1}
                 style={{ minHeight: '24px', maxHeight: '200px' }}
-              // disabled={disabled || isStreaming}
               />
             </div>
 
@@ -67,14 +143,24 @@ export function Composer({
             <div className="flex items-center justify-between px-4 pb-4">
               {/* Left Side - 2 Buttons */}
               <div className="flex items-center gap-2">
-                {/* Plus Button */}
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,.pdf,.docx"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+
+                {/* Attach Button - Now enabled */}
                 <button
-                  disabled
-                  className="w-8 h-8 rounded-lg border border-[#2a2a2a] hover:bg-white/10 transition-colors disabled:cursor-not-allowed flex items-center justify-center"
-                  title="Attach (Coming soon)"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading || disabled}
+                  className="w-8 h-8 rounded-lg border border-[#2a2a2a] hover:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                  title="Attach file (Image, PDF, DOCX)"
                 >
                   <svg className="w-5 h-5 text-[#cccccc]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                   </svg>
                 </button>
 

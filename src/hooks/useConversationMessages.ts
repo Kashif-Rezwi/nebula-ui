@@ -97,7 +97,7 @@ export function useConversationMessages(conversationId?: string) {
       const uiMessages: UIMessage[] = toUIMessages(conversation.messages);
 
       if (setMessages) {
-        setMessages(uiMessages);
+        setMessages(uiMessages as any);
       }
     } catch (error) {
       console.error('Failed to load conversation:', error);
@@ -119,14 +119,62 @@ export function useConversationMessages(conversationId?: string) {
     setShowScrollButton(isScrolledUp);
   };
 
-  const handleSendMessage = async (messageText: string) => {
-    if (!messageText.trim() || !conversationId || status !== 'ready') return;
+  const handleSendMessage = async (
+    messageText: string,
+    attachments: import('@/types').Attachment[] = []
+  ) => {
+    if ((!messageText.trim() && attachments.length === 0) || !conversationId || status !== 'ready') {
+      return;
+    }
 
     try {
       if (sendMessage) {
+        // Build parts array for multi-modal message (consistent with architecture)
+        const parts: any[] = [];
+
+        // Add text part (even if empty, to maintain structure)
+        if (messageText.trim()) {
+          parts.push({ type: 'text', text: messageText });
+        }
+
+        // Add image/file parts from uploaded attachments
+        attachments.forEach(att => {
+          if (att.uploadedUrl && att.status === 'uploaded') {
+            if (att.type === 'image') {
+              // Validate URL before adding
+              try {
+                new URL(att.uploadedUrl);
+                parts.push({
+                  type: 'image',
+                  image: att.uploadedUrl,  // AI SDK standard field
+                  url: att.uploadedUrl,     // Also include for compatibility
+                  ...(att.attachmentId && { attachmentId: att.attachmentId }), // Link to Attachment entity
+                });
+              } catch (e) {
+                console.error('Invalid image URL:', att.uploadedUrl);
+              }
+            } else if (att.type === 'file' && att.attachmentId) {
+                // Determine file type for UI
+                const isPdf = att.file.type === 'application/pdf' || att.file.name.endsWith('.pdf');
+                
+                parts.push({
+                    type: 'file',
+                    text: att.file.name,
+                    attachmentId: att.attachmentId,
+                    fileType: isPdf ? 'pdf' : 'docx'
+                });
+            }
+          }
+        });
+
+        // Ensure at least one part exists
+        if (parts.length === 0) {
+          parts.push({ type: 'text', text: '' });
+        }
+
         sendMessage({
           role: 'user',
-          parts: [{ type: 'text', text: messageText }],
+          parts,
         });
       }
 
@@ -136,6 +184,8 @@ export function useConversationMessages(conversationId?: string) {
       }
     } catch (error) {
       console.error('Failed to send message:', error);
+      // Re-throw for ChatArea to handle
+      throw error;
     }
   };
 
