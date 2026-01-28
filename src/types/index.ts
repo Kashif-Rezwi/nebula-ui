@@ -118,7 +118,7 @@ export interface Message {
   metadata?: {
     // NEW: Mode information
     operationalMode?: OperationalMode;     // What was requested ('fast' | 'thinking' | 'auto')
-    effectiveMode?: 'fast' | 'thinking';   // What was actually used
+    effectiveMode?: EffectiveMode;         // What was actually used (includes 'vision')
     modelUsed?: string;                    // AI model name
     tokensUsed?: number;                   // Token count
     temperature?: number;                  // Temperature setting

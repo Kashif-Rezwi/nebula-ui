@@ -14,6 +14,7 @@ export function toUIMessage(msg: Message): UIMessage {
     if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
         parts = [...msg.parts];
     } else {
+        // Wrap legacy content-only messages in a text part
         parts = [{ type: 'text', text: msg.content || '' }];
     }
 
@@ -47,6 +48,7 @@ export function toUIMessage(msg: Message): UIMessage {
         });
     }
 
+    // AI SDK v5 UIMessage only uses 'parts', no 'content' field
     return {
         id: msg.id,
         role: msg.role,

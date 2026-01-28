@@ -10,7 +10,6 @@ export function ChatPage() {
 
   // Fetch conversation data to get system prompt
   const { data: conversation } = useConversation(conversationId);
-  console.log("conversation", { conversation })
 
   // Mutation for updating system prompt
   const { mutate: updateSystemPrompt, isPending: isSaving } = useUpdateSystemPrompt();

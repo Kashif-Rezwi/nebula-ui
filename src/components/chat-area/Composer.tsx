@@ -199,7 +199,7 @@ export function Composer({
                   <button
                     onClick={onSend}
                     className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
-                    disabled={!message.trim() || isStreaming || disabled}
+                    disabled={(!message.trim() && attachments.length === 0) || isStreaming || disabled}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />

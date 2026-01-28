@@ -1,4 +1,5 @@
 import { api, getErrorMessage } from './api';
+import { API_CONFIG } from '@/constants';
 import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from '@/types';
 
 /**
@@ -62,11 +63,6 @@ export function validateFile(file: File): ValidationResult {
 }
 
 /**
- * Deprecated: Use validateFile instead
- */
-export const validateImageFile = validateFile;
-
-/**
  * Uploads a file to the server
  * @param file - The file to upload
  * @param conversationId - The conversation ID for the upload 
@@ -115,7 +111,6 @@ export async function uploadAttachment(
         }
 
         // Convert relative path to full URL
-        const { API_CONFIG } = await import('@/constants');
         // Remove '/api' suffix if present to get the root server URL
         // Example: http://localhost:3001/api -> http://localhost:3001
         const serverUrl = API_CONFIG.BASE_URL.replace(/\/api\/?$/, '');
@@ -133,11 +128,6 @@ export async function uploadAttachment(
         throw new Error(`Upload failed: ${errorMessage}`);
     }
 }
-
-/**
- * Deprecated: Use uploadAttachment instead
- */
-export const uploadImage = uploadAttachment;
 
 /**
  * Formats file size to human-readable string

@@ -22,9 +22,29 @@ export function createChatTransport(conversationId: string) {
             // Get mode override from centralized preference utility
             const modeOverride = modePreference.getModeOverride();
 
+            // Transform messages to match backend expectation
+            // AI SDK v5 UIMessage always uses 'parts', no 'content' field
+            const apiMessages = messages.map(msg => {
+                const parts = (msg as any).parts;
+
+                // All messages should have parts in AI SDK v5
+                if (Array.isArray(parts) && parts.length > 0) {
+                    return {
+                        role: msg.role,
+                        parts: parts,
+                    };
+                }
+
+                // Fallback for empty/missing parts (shouldn't happen in normal use)
+                return {
+                    role: msg.role,
+                    parts: [{ type: 'text', text: '' }],
+                };
+            });
+
             return {
                 body: {
-                    messages,
+                    messages: apiMessages,
                     // Include modeOverride only if user selected a specific mode (not 'auto')
                     ...(modeOverride && { modeOverride })
                 }

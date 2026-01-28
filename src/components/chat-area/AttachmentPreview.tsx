@@ -1,4 +1,4 @@
-import { IoDocumentTextOutline, IoImageOutline } from 'react-icons/io5';
+import { IoDocumentTextOutline } from 'react-icons/io5';
 import type { Attachment } from '@/types';
 import { formatFileSize } from '@/lib/upload';
 
