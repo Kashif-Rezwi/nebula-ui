@@ -8,8 +8,10 @@ import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useCreateConversationWithMessage } from '../../hooks/conversations';
 import { useScrollToMessage } from '../../hooks/useScrollToMessage';
-import type { UIMessage, ChatRouterState, ChatAreaProps } from '@/types';
+import type { UIMessage, ChatRouterState, ChatAreaProps, Attachment } from '@/types';
 import { ROUTES } from '../../constants';
+import { validateFile, uploadAttachment } from '@/lib/upload';
+import { toast } from '@/utils/toast';
 
 export function ChatArea({
   conversationId,
@@ -17,9 +19,13 @@ export function ChatArea({
   onDraftSystemPromptChange
 }: ChatAreaProps) {
   const [message, setMessage] = useState('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
   const prevMessagesLengthRef = useRef(0);
+
+  const MAX_ATTACHMENTS = 5; // Max 5 attachments per message
 
   const {
     messages,
@@ -66,13 +72,123 @@ export function ChatArea({
   const { mutateAsync: createConversationWithMessage, isPending: isCreating } =
     useCreateConversationWithMessage();
 
+  // Attachment handlers
+  const handleAttachmentAdd = async (file: File) => {
+    // Check if conversation exists
+    if (!conversationId) {
+      toast.error('Please create a conversation first before uploading files');
+      return;
+    }
+
+    // Check limit
+    if (attachments.length >= MAX_ATTACHMENTS) {
+      toast.error(`Maximum ${MAX_ATTACHMENTS} files per message`);
+      return;
+    }
+
+    // Validate
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error);
+      return;
+    }
+
+    // Create attachment object
+    const attachment: Attachment = {
+      id: crypto.randomUUID(),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      status: 'uploading',
+      progress: 0,
+      type: file.type.startsWith('image/') ? 'image' : 'file',
+    };
+
+    setAttachments(prev => [...prev, attachment]);
+    setIsUploading(true);
+
+    try {
+      // Upload to server with conversationId
+      const { url: uploadedUrl, attachmentId } = await uploadAttachment(file, conversationId, (progress) => {
+        setAttachments(prev =>
+          prev.map(att =>
+            att.id === attachment.id
+              ? { ...att, progress }
+              : att
+          )
+        );
+      });
+
+      // Update with URL and attachment ID
+      setAttachments(prev =>
+        prev.map(att =>
+          att.id === attachment.id
+            ? { ...att, uploadedUrl, attachmentId, status: 'uploaded' as const }
+            : att
+        )
+      );
+      toast.success('File uploaded successfully');
+    } catch (error) {
+      // Mark as error
+      setAttachments(prev =>
+        prev.map(att =>
+          att.id === attachment.id
+            ? { ...att, status: 'error' as const, error: error instanceof Error ? error.message : 'Upload failed' }
+            : att
+        )
+      );
+      toast.error('Failed to upload file');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleAttachmentRemove = (id: string) => {
+    setAttachments(prev => {
+      const removed = prev.find(att => att.id === id);
+      if (removed) {
+        // Clean up blob URL to prevent memory leaks
+        URL.revokeObjectURL(removed.previewUrl);
+      }
+      return prev.filter(att => att.id !== id);
+    });
+  };
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      attachments.forEach(att => URL.revokeObjectURL(att.previewUrl));
+    };
+  }, []);
+
   // Mode management is now message-level, handled in Composer
 
   const handleSend = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() && attachments.length === 0) return;
+
+    // Don't allow sending with uploading attachments
+    if (attachments.some(att => att.status === 'uploading')) {
+      toast.error('Please wait for upload to complete');
+      return;
+    }
+
+    // Don't allow sending with failed attachments
+    if (attachments.some(att => att.status === 'error')) {
+      toast.error('Please remove failed uploads before sending');
+      return;
+    }
+
+    // Ensure all uploaded attachments have valid URLs
+    const uploadedAttachments = attachments.filter(att => att.status === 'uploaded');
+    if (uploadedAttachments.some(att => !att.uploadedUrl)) {
+      toast.error('Some uploads are not ready yet. Please wait.');
+      return;
+    }
 
     const messageText = message;
+    const messageAttachments = [...attachments];
+
     setMessage('');
+    setAttachments([]); // Clear immediately
 
     // Reset textarea height
     if (textareaRef.current) {
@@ -96,13 +212,14 @@ export function ChatArea({
           state: { shouldAutoTrigger: true } as ChatRouterState,
         });
       } else {
-        // At /chat/:id - Send message normally
-        await handleSendMessage(messageText);
+        // At /chat/:id - Send message with attachments
+        await handleSendMessage(messageText, messageAttachments);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      // Restore message on error
+      // Restore message and attachments on error
       setMessage(messageText);
+      setAttachments(messageAttachments);
     }
   };
 
@@ -136,6 +253,10 @@ export function ChatArea({
                   isStreaming={false}
                   textareaRef={textareaRef}
                   showModeSelector={true}
+                  attachments={attachments}
+                  onAttachmentAdd={handleAttachmentAdd}
+                  onAttachmentRemove={handleAttachmentRemove}
+                  isUploading={isUploading}
                 />
               </div>
             </div>
@@ -162,6 +283,10 @@ export function ChatArea({
                   isStreaming={false}
                   textareaRef={textareaRef}
                   showModeSelector={hasConversation}
+                  attachments={attachments}
+                  onAttachmentAdd={handleAttachmentAdd}
+                  onAttachmentRemove={handleAttachmentRemove}
+                  isUploading={isUploading}
                 />
               </div>
             </div>
@@ -200,6 +325,10 @@ export function ChatArea({
             isStreaming={isStreamingOrCreating}
             textareaRef={textareaRef}
             showModeSelector={true}
+            attachments={attachments}
+            onAttachmentAdd={handleAttachmentAdd}
+            onAttachmentRemove={handleAttachmentRemove}
+            isUploading={isUploading}
           />
         </div>
       )}
