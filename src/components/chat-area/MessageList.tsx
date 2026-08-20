@@ -9,7 +9,6 @@ import type { UIMessage, WebSearchSource, SearchSummary } from '../../types';
 
 interface MessageListProps {
   messages: UIMessage[];
-  isStreaming: boolean;
 }
 
 // Helper to parse tool output into sources AND summary
@@ -69,8 +68,17 @@ export function MessageList({ messages }: MessageListProps) {
   useLayoutEffect(() => {
     const calculatePadding = () => {
       const container = document.querySelector('[data-messages-container]');
+
+      // Measure the fixed bottom composer stack so the last message (+ its copy
+      // button) always clears it, no matter the composer height (attachments,
+      // multi-line textarea, scroll-to-bottom band, etc.).
+      const composerEl = document.querySelector('[data-chat-composer]');
+      const composerHeight = composerEl ? composerEl.getBoundingClientRect().height : 148;
+      // Comfortable margin so the last message is fully above the composer.
+      const minPadding = composerHeight + 16;
+
       if (!container || messages.length < 2) {
-        setDynamicPadding(168);
+        setDynamicPadding(minPadding);
         return;
       }
 
@@ -78,7 +86,7 @@ export function MessageList({ messages }: MessageListProps) {
       const totalHeight = lastTwo.reduce((sum, el) => sum + (el as HTMLElement).offsetHeight, 0);
       const topSpace = 16;
       const totalSpaceBetweenMessages = 48;
-      const padding = Math.max(168, window.innerHeight - totalHeight - totalSpaceBetweenMessages - topSpace);
+      const padding = Math.max(minPadding, window.innerHeight - totalHeight - totalSpaceBetweenMessages - topSpace);
 
       setDynamicPadding(padding);
     };
@@ -91,6 +99,10 @@ export function MessageList({ messages }: MessageListProps) {
 
     container?.querySelectorAll('[data-message-id]')
       .forEach((el, i, arr) => i >= arr.length - 2 && observer.observe(el));
+
+    // Recompute when the composer (underlay band + controls) changes height too
+    const composerEl = document.querySelector('[data-chat-composer]');
+    if (composerEl) observer.observe(composerEl);
 
     window.addEventListener('resize', calculatePadding);
 
@@ -107,9 +119,6 @@ export function MessageList({ messages }: MessageListProps) {
       className="max-w-3xl mx-auto px-4 pt-4"
       style={{ paddingBottom: `${dynamicPadding}px` }}
     >
-      {/* Top gradient fade */}
-      <div className="absolute top-0 left-0 right-0 h-[16px] bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none z-10" />
-
       {/* Messages */}
       <div className="flex flex-col gap-6">
         {messages.map((msg, index) => (
@@ -117,8 +126,7 @@ export function MessageList({ messages }: MessageListProps) {
             key={msg.id}
             data-message-id={msg.id}
             data-role={msg.role}
-            className="animate-fade-in"
-            style={{ animationDelay: `${index * 0.05}s` }}
+            className={index === messages.length - 1 ? 'animate-fade-in' : ''}
           >
             {msg.role === 'user' ? (
               /* User Message */
@@ -144,7 +152,7 @@ export function MessageList({ messages }: MessageListProps) {
               </div>
             ) : (
               /* AI Message */
-              <div className="group text-[15px] text-[#e8e8e8]">
+              <div className="group text-[15px] text-foreground">
                 {/* Render message parts */}
                 <MessageContent message={msg} variant="assistant" />
                 
@@ -152,51 +160,35 @@ export function MessageList({ messages }: MessageListProps) {
                 {(() => {
                   const parts = (msg as any).parts || [];
                   return parts.map((part: any, partIndex: number) => {
-                    if (part.type === 'tool-tavily_web_search') {
-                      const { sources, summary } = parseToolOutput(
-                        part.state === 'output-available' ? part.output : undefined
-                      );
-                      return (
-                        <ToolCallStatus
-                          key={partIndex}
-                          toolName="tavily_web_search"
-                          status={
-                            part.state === 'output-available' ? 'success' :
-                              part.state === 'output-error' ? 'error' : 'pending'
-                          }
-                          sources={sources}
-                          summary={summary}
-                          error={part.state === 'output-error' ? part.errorText : undefined}
-                        />
-                      );
-                    }
-                    
-                    if (part.type === 'dynamic-tool') {
-                      const { sources, summary } = parseToolOutput(
-                        part.state === 'output-available' ? part.output : undefined
-                      );
-                      return (
-                        <ToolCallStatus
-                          key={partIndex}
-                          toolName={part.toolName}
-                          status={
-                            part.state === 'output-available' ? 'success' :
-                              part.state === 'output-error' ? 'error' : 'pending'
-                          }
-                          sources={sources}
-                          summary={summary}
-                          error={part.state === 'output-error' ? part.errorText : undefined}
-                        />
-                      );
-                    }
-                    
-                    return null;
+                    // Both statically-typed tool parts (e.g. tool-tavily_web_search)
+                    // and AI SDK dynamic-tool parts render through the same strip
+                    const isToolPart =
+                      part.type === 'tool-tavily_web_search' || part.type === 'dynamic-tool';
+                    if (!isToolPart) return null;
+
+                    const { sources, summary } = parseToolOutput(
+                      part.state === 'output-available' ? part.output : undefined
+                    );
+
+                    return (
+                      <ToolCallStatus
+                        key={partIndex}
+                        toolName={part.type === 'dynamic-tool' ? part.toolName : 'tavily_web_search'}
+                        status={
+                          part.state === 'output-available' ? 'success' :
+                            part.state === 'output-error' ? 'error' : 'pending'
+                        }
+                        sources={sources}
+                        summary={summary}
+                        error={part.state === 'output-error' ? part.errorText : undefined}
+                      />
+                    );
                   });
                 })()}
 
-                {/* Show timestamp and mode indicator */}
-                {(msg.metadata?.createdAt || msg.metadata?.effectiveMode) && (
-                  <div className="flex items-center gap-2 mt-1">
+                {/* Footer: mode + timestamp on the left, copy action on the right */}
+                <div className="flex items-center justify-between mt-1">
+                  <div className="flex items-center gap-2">
                     {msg.metadata?.effectiveMode && (
                       <ModeIndicator
                         mode={msg.metadata.effectiveMode}
@@ -212,8 +204,8 @@ export function MessageList({ messages }: MessageListProps) {
                       </div>
                     )}
                   </div>
-                )}
-                <MessageActions content={getMessageText(msg)} />
+                  <MessageActions content={getMessageText(msg)} />
+                </div>
               </div>
             )}
           </div>

@@ -1,5 +1,5 @@
 import { IoDocumentTextOutline } from 'react-icons/io5';
-import ReactMarkdown from 'react-markdown';
+import { Markdown } from '../common/Markdown';
 import type { UIMessage } from '../../types';
 
 interface MessageContentProps {
@@ -25,8 +25,8 @@ export function MessageContent({ message, variant }: MessageContentProps) {
               {part.text}
             </div>
           ) : (
-            <div key={idx} className="prose prose-invert prose-sm max-w-none">
-              <ReactMarkdown>{part.text}</ReactMarkdown>
+            <div key={idx} className="prose max-w-none">
+              <Markdown>{part.text}</Markdown>
             </div>
           );
         }
@@ -41,8 +41,8 @@ export function MessageContent({ message, variant }: MessageContentProps) {
                 alt={variant === 'user' ? 'Uploaded image' : 'AI-provided image'}
                 className={
                   variant === 'user'
-                    ? 'max-w-sm rounded-lg border border-primary/30 cursor-pointer hover:opacity-90 transition-opacity'
-                    : 'max-w-full max-h-96 rounded-lg border border-[#2a2a2a] cursor-pointer hover:opacity-90 transition-opacity'
+                    ? 'max-w-full sm:max-w-sm rounded-xl border border-primary/30 cursor-pointer hover:opacity-90 transition-opacity'
+                    : 'max-w-full max-h-96 rounded-xl border border-border cursor-pointer hover:opacity-90 transition-opacity'
                 }
                 onClick={() => window.open(imageUrl, '_blank')}
                 onError={(e) => {
@@ -60,7 +60,7 @@ export function MessageContent({ message, variant }: MessageContentProps) {
           return (
             <div
               key={idx}
-              className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-lg p-3 max-w-sm"
+              className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-xl p-3 max-w-full sm:max-w-sm"
             >
               <div className="w-10 h-10 rounded bg-primary/20 flex items-center justify-center flex-shrink-0">
                 <IoDocumentTextOutline className="w-6 h-6 text-primary" />
