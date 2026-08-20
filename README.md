@@ -445,8 +445,9 @@ This creates an optimized production build in `dist/`:
 
 3. **Set Environment Variables**
    ```
-   VITE_API_BASE_URL=https://your-backend-api.com
+   VITE_API_BASE_URL=https://better-dev-api.onrender.com
    ```
+   *(Backend API hosted on Render — free tier; first request after ~15 min idle may take ~30–60s to cold-start.)*
 
 4. **Deploy**
    - Vercel automatically deploys on every push
@@ -490,11 +491,8 @@ VITE_CLIENT_PORT=3000
 # Local development
 VITE_API_BASE_URL=http://localhost:3001
 
-# Production (DigitalOcean example)
-# VITE_API_BASE_URL=https://api.betterdev.in
-
-# Production (Your custom domain)
-# VITE_API_BASE_URL=https://api.your-domain.com
+# Production (Render-hosted backend — set in Vercel dashboard, not here)
+# VITE_API_BASE_URL=https://better-dev-api.onrender.com
 ```
 
 ### **Environment Variable Naming**
