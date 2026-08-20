@@ -148,13 +148,24 @@ export interface StreamChunk {
 // Component Props Types
 export interface ChatAreaProps {
   conversationId?: string;
+  title?: string;
   draftSystemPrompt?: string;
   onDraftSystemPromptChange?: (prompt: string) => void;
+  /** Whether the static left/right panels are collapsed on large screens.
+      When collapsed the chat content expands to use the freed space. */
+  isLeftPanelCollapsed?: boolean;
+  isRightPanelCollapsed?: boolean;
 }
 
 export interface ActionsPanelProps {
   currentConversationId?: string;
   onConversationCreated?: () => void;
+  // Mobile drawer controls (panels are always visible on large screens)
+  isOpen?: boolean;
+  onClose?: () => void;
+  /** Desktop collapse control (toggle lives in the brand header) */
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export interface ActivitiesPanelProps {
@@ -163,6 +174,12 @@ export interface ActivitiesPanelProps {
   draftSystemPrompt?: string;
   onSaveSystemPrompt: (systemPrompt: string) => void;
   isSavingSystemPrompt: boolean;
+  // Mobile drawer controls (panels are always visible on large screens)
+  isOpen?: boolean;
+  onClose?: () => void;
+  /** Desktop collapse control (toggle lives in the panel header) */
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export interface SystemPromptCardProps {
@@ -170,6 +187,10 @@ export interface SystemPromptCardProps {
   onSaveSystemPrompt: (systemPrompt: string) => void;
   isSavingSystemPrompt: boolean;
   isDraft?: boolean;
+  /** Close the panel (mobile drawer mode) */
+  onClose?: () => void;
+  /** Collapse the panel (desktop) — reopen pill appears at the screen edge */
+  onToggleCollapse?: () => void;
 }
 
 export interface SystemPromptModalProps {

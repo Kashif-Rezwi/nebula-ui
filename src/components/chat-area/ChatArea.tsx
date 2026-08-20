@@ -13,10 +13,15 @@ import { ROUTES } from '../../constants';
 import { validateFile, uploadAttachment } from '@/lib/upload';
 import { toast } from '@/utils/toast';
 
+import { cn } from '../../lib/utils';
+
 export function ChatArea({
   conversationId,
+  title,
   draftSystemPrompt,
-  onDraftSystemPromptChange
+  onDraftSystemPromptChange,
+  isLeftPanelCollapsed = false,
+  isRightPanelCollapsed = false
 }: ChatAreaProps) {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -49,6 +54,8 @@ export function ChatArea({
       return;
     }
 
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     // Check if a new message was added
     if (messages.length > prevMessagesLengthRef.current) {
       const latestMessage = messages[messages.length - 1];
@@ -56,7 +63,7 @@ export function ChatArea({
       // ONLY scroll if the latest message is from the USER
       if (latestMessage.role === 'user') {
         // Wait a bit for the DOM to update, then scroll to the new message
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           scrollToMessage(latestMessage.id, {
             offset: 16, // 16px from top of viewport
             behavior: 'smooth'
@@ -67,6 +74,13 @@ export function ChatArea({
 
     // Update previous length
     prevMessagesLengthRef.current = messages.length;
+
+    // Cancel the pending scroll if the effect re-runs or the component unmounts
+    return () => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [messages, loading, scrollToMessage]);
 
   const { mutateAsync: createConversationWithMessage, isPending: isCreating } =
@@ -153,10 +167,18 @@ export function ChatArea({
     });
   };
 
-  // Cleanup blob URLs on unmount
+  // Keep a live ref of the attachments so the unmount cleanup below can revoke
+  // the CURRENT blob URLs. Using `attachments` directly in a `[]`-deps cleanup
+  // would capture the initial (empty) array and leak every preview URL.
+  const attachmentsRef = useRef<Attachment[]>([]);
+  useEffect(() => {
+    attachmentsRef.current = attachments;
+  }, [attachments]);
+
+  // Cleanup blob URLs on unmount to prevent memory leaks
   useEffect(() => {
     return () => {
-      attachments.forEach(att => URL.revokeObjectURL(att.previewUrl));
+      attachmentsRef.current.forEach(att => URL.revokeObjectURL(att.previewUrl));
     };
   }, []);
 
@@ -215,6 +237,10 @@ export function ChatArea({
         // At /chat/:id - Send message with attachments
         await handleSendMessage(messageText, messageAttachments);
       }
+
+      // Success — the sent message references uploaded URLs/base64, so the
+      // composer preview blob URLs are no longer needed. Release them.
+      messageAttachments.forEach(att => URL.revokeObjectURL(att.previewUrl));
     } catch (error) {
       console.error('Failed to send message:', error);
       // Restore message and attachments on error
@@ -237,7 +263,48 @@ export function ChatArea({
 
   return (
     <main className="w-full h-full flex flex-col">
-      <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto">
+      {/* Scrollable content. Horizontal offsets reserve space for the static
+          side panels (left panel at lg+, right panel at xl+) so the title,
+          messages and composer always center within the free area and never
+          slide underneath the floating panels. Offsets drop away when a panel
+          is collapsed, letting the content expand into the freed space.
+          288px = panel (left-4 + w-64) + 16px gap. */}
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className={cn(
+          "flex-1 overflow-y-auto",
+          !isLeftPanelCollapsed && "lg:pl-[288px]",
+          !isRightPanelCollapsed && "xl:pr-[288px]"
+        )}
+      >
+        {/* Sticky chat title - mirrors the composer treatment: a solid background with a
+            downward fade, so messages slide under it and fade out at the top of the chat.
+            Centered to the message column (max-w-3xl) to avoid overlapping the sidebars
+            and the mobile drawer toggles. */}
+        {hasConversation && (
+          <div className="sticky top-0 z-20 w-full max-w-3xl mx-auto">
+            {/* Vertical position aligns with the sidebar brand text (desktop) / the
+                drawer toggles (mobile): container top-4 + toggle center at 20px.
+                Horizontal padding keeps the title clear of the floating drawer
+                toggles: both toggles below lg (panels are drawers), only the
+                right toggle at lg-xl (left panel is static, space already reserved
+                by the scroll container offset), none at xl+. */}
+            <div className="bg-background pt-4 lg:pt-[34px] pb-2 pl-20 pr-20 lg:pl-4 lg:pr-20 xl:pr-4">
+              <div className="flex h-10 lg:h-7 items-center">
+                <h1
+                  className="truncate text-base lg:text-[15px] font-medium text-foreground/80 leading-none"
+                  title={title}
+                >
+                  {title || 'Untitled'}
+                </h1>
+              </div>
+            </div>
+            {/* Fade below the title so content scrolling under it fades out like the composer */}
+            <div className="h-6 bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none" />
+          </div>
+        )}
+
         {/* At /new - Show centered greeting + composer */}
         {!hasConversation && (
           <div className="h-full flex items-center justify-center px-4">
@@ -298,7 +365,6 @@ export function ChatArea({
           <>
             <MessageList
               messages={messages as UIMessage[]}
-              isStreaming={status === 'streaming'}
             />
             <div ref={messagesEndRef} />
           </>
@@ -307,8 +373,17 @@ export function ChatArea({
 
       {/* Fixed bottom composer */}
       {hasConversation && (
-        <div className="fixed bottom-0 left-0 right-0">
-          <div className="absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-auto" />
+        <div
+          className={cn(
+            "fixed bottom-0 left-0 right-0",
+            !isLeftPanelCollapsed && "lg:left-[288px]",
+            !isRightPanelCollapsed && "xl:right-[288px]"
+          )}
+          data-chat-composer
+        >
+          {/* Decorative background fade above the composer. Never intercepts clicks,
+              otherwise it would cover the copy button of the last message. */}
+          <div className="absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-none" />
 
           <ScrollToBottom
             show={showScrollButton || status === 'streaming'}

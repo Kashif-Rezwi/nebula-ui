@@ -9,7 +9,7 @@ import {
   DialogTrigger,
   DialogClose
 } from '../ui/dialog';
-import { FiEdit2 } from "react-icons/fi";
+import { IoPencil } from "react-icons/io5";
 import { Button } from '../ui/button';
 import type { SystemPromptModalProps } from '@/types';
 import { Separator } from '../ui/separator';
@@ -25,7 +25,7 @@ export function SystemPromptModal({
   const maxInputLength = 2000;
 
   const handleSave = () => {
-    onSave(instructions?.trim());
+    onSave(instructions.trim());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -39,12 +39,15 @@ export function SystemPromptModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="cursor-pointer">
-          <FiEdit2 className="text-foreground/80" />
+        <button
+          className="w-7 h-7 rounded-lg bg-surface-hover/80 flex items-center justify-center text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-smooth cursor-pointer"
+          title="Edit instructions"
+        >
+          <IoPencil className="w-3.5 h-3.5" />
         </button>
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-3xl bg-[#1a1a1a] border border-border rounded-2xl!">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-3xl bg-surface border border-border rounded-2xl!">
         <DialogHeader>
           <DialogTitle>Set project instructions</DialogTitle>
           <DialogDescription>
@@ -54,12 +57,11 @@ export function SystemPromptModal({
 
         <div className="flex-1 h-[60vh]">
           <Textarea
-            defaultValue={initialInstructions}
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Enter instructions for this conversation..."
-            className="w-full h-full bg-[#262626] text-foreground rounded-xl p-4 border border-border resize-none font-mono text-sm"
+            className="w-full h-full bg-surface-hover text-foreground rounded-xl p-4 border border-border resize-none font-mono text-sm"
             maxLength={maxInputLength}
             disabled={isSaving}
             autoFocus
@@ -80,8 +82,9 @@ export function SystemPromptModal({
                   type="submit"
                   className='bg-primary/80'
                   onClick={handleSave}
+                  disabled={isSaving}
                 >
-                  {isDraft ? 'Set for New Chat' : 'Save changes'}
+                  {isSaving ? 'Saving...' : isDraft ? 'Set for New Chat' : 'Save changes'}
                 </Button>
               </div>
             </DialogClose>
