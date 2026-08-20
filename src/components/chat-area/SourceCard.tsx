@@ -1,3 +1,4 @@
+import { IoOpenOutline } from 'react-icons/io5';
 import type { WebSearchSource } from '../../types';
 
 interface SourceCardProps {
@@ -13,7 +14,7 @@ export function SourceCard({ source, index }: SourceCardProps) {
   return (
     <button
       onClick={handleClick}
-      className="flex items-start gap-3 p-3 rounded-lg bg-[#1a1a1a] border border-border hover:border-primary/50 transition-smooth text-left group"
+      className="flex items-start gap-3 p-3 rounded-xl bg-surface border border-border hover:border-primary/50 transition-smooth text-left group"
       title={`Open ${source.title}`}
     >
       {/* Favicon */}
@@ -55,19 +56,7 @@ export function SourceCard({ source, index }: SourceCardProps) {
 
       {/* Arrow Icon */}
       <div className="flex-shrink-0">
-        <svg
-          className="w-4 h-4 text-foreground/40 group-hover:text-primary transition-smooth"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-          />
-        </svg>
+        <IoOpenOutline className="w-4 h-4 text-foreground/40 group-hover:text-primary transition-smooth" />
       </div>
     </button>
   );

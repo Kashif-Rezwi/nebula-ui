@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { IoArrowUpOutline, IoAttachOutline } from 'react-icons/io5';
 import { ModeSelector } from './ModeSelector';
 import { AttachmentPreview } from './AttachmentPreview';
 import { useModePreference } from '../../hooks/useModePreference';
@@ -91,11 +92,11 @@ export function Composer({
   };
 
   return (
-    <div className="relative px-4 bt-0 pb-4">
+    <div className="relative px-4 pb-4">
       <div className="max-w-3xl mx-auto z-10">
-        <div 
-          className={`bg-[#1a1a1a] rounded-2xl border transition-colors shadow-sm ${
-            isDragging ? 'border-primary bg-primary/10' : 'border-[#2a2a2a]'
+        <div
+          className={`bg-surface rounded-2xl border transition-colors shadow-sm ${
+            isDragging ? 'border-primary bg-primary/10' : 'border-border'
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -133,7 +134,7 @@ export function Composer({
                 }}
                 onKeyDown={onKeyDown}
                 placeholder="Reply to better DEV..."
-                className="w-full bg-transparent text-[15px] text-white focus:outline-none resize-none overflow-y-auto placeholder:text-[#666666] leading-6"
+                className="w-full bg-transparent text-[15px] text-foreground focus:outline-none resize-none overflow-y-auto placeholder:text-foreground/40 leading-6"
                 rows={1}
                 style={{ minHeight: '24px', maxHeight: '200px' }}
               />
@@ -152,30 +153,14 @@ export function Composer({
                   onChange={handleFileChange}
                 />
 
-                {/* Attach Button - Now enabled */}
+                {/* Attach Button */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading || disabled}
-                  className="w-8 h-8 rounded-lg border border-[#2a2a2a] hover:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="w-8 h-8 rounded-lg border border-border hover:bg-surface-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
                   title="Attach file (Image, PDF, DOCX)"
                 >
-                  <svg className="w-5 h-5 text-[#cccccc]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                  </svg>
-                </button>
-
-                {/* Filter/Settings Button */}
-                <button
-                  disabled
-                  className="w-8 h-8 rounded-lg border border-[#2a2a2a] hover:bg-white/10 transition-colors disabled:cursor-not-allowed flex items-center justify-center"
-                  title="Settings (Coming soon)"
-                >
-                  <svg className="w-5 h-5 text-[#cccccc]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    <circle cx="8" cy="6" r="2" fill="currentColor" />
-                    <circle cx="16" cy="12" r="2" fill="currentColor" />
-                    <circle cx="12" cy="18" r="2" fill="currentColor" />
-                  </svg>
+                  <IoAttachOutline className="w-5 h-5 text-foreground/80" />
                 </button>
               </div>
 
@@ -190,22 +175,15 @@ export function Composer({
                   />
                 )}
 
-                {/* Send Button with Status Indicator */}
-                <div className="relative">
-                  {/* Status Indicator */}
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-teal-400 rounded-full"></div>
-
-                  {/* Send Button */}
-                  <button
-                    onClick={onSend}
-                    className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
-                    disabled={(!message.trim() && attachments.length === 0) || isStreaming || disabled}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                    </svg>
-                  </button>
-                </div>
+                {/* Send Button */}
+                <button
+                  onClick={onSend}
+                  className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                  disabled={(!message.trim() && attachments.length === 0) || isStreaming || disabled}
+                  title="Send message"
+                >
+                  <IoArrowUpOutline className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </div>

@@ -58,7 +58,7 @@ export function ModeSelector({ currentMode, onModeChange, disabled = false }: Mo
                 disabled={disabled}
             >
                 <button
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1a1a] hover:bg-[#262626] transition-smooth group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-hover transition-smooth group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Icon className="w-4 h-4 text-foreground/80" />
                     <div className="flex flex-col items-start min-w-0">
@@ -71,7 +71,7 @@ export function ModeSelector({ currentMode, onModeChange, disabled = false }: Mo
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
-                className="w-[220px] bg-[#1a1a1a] border border-border rounded-lg"
+                className="w-[220px] bg-surface border border-border rounded-lg"
                 align="start"
                 side="top"
                 sideOffset={8}
@@ -88,7 +88,7 @@ export function ModeSelector({ currentMode, onModeChange, disabled = false }: Mo
                         <DropdownMenuItem
                             key={config.mode}
                             onClick={() => onModeChange(config.mode)}
-                            className="flex items-center gap-3 px-2 py-2 text-sm rounded-md hover:bg-[#262626] cursor-pointer focus:bg-[#262626] outline-none"
+                            className="flex items-center gap-3 px-2 py-2 text-sm rounded-md hover:bg-surface-hover cursor-pointer focus:bg-surface-hover outline-none"
                         >
                             <ModeIcon className="w-5 h-5 text-foreground/80 flex-shrink-0" />
                             <div className="flex-1 text-left min-w-0">

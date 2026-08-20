@@ -22,22 +22,16 @@ export function ChatSkeleton() {
             </div>
   
             {/* AI response skeleton - EXACT match */}
-            <div className="group text-[15px] text-[#e8e8e8] mt-6">
-              <div className="prose prose-invert prose-sm max-w-none space-y-3">
-                <div className="h-5 bg-[#262626] rounded w-full animate-pulse" />
-                <div className="h-5 bg-[#262626] rounded w-5/6 animate-pulse" />
-                <div className="h-5 bg-[#262626] rounded w-4/5 animate-pulse" />
+            <div className="group text-[15px] text-foreground mt-6">
+              <div className="space-y-3">
+                <div className="h-5 bg-surface-hover rounded w-full animate-pulse" />
+                <div className="h-5 bg-surface-hover rounded w-5/6 animate-pulse" />
+                <div className="h-5 bg-surface-hover rounded w-4/5 animate-pulse" />
               </div>
-              {/* Timestamp skeleton */}
-              <div className="text-xs text-foreground/40 mt-1 opacity-40">
+              {/* Footer skeleton: mode/timestamp left, copy action right */}
+              <div className="flex items-center justify-between mt-1 opacity-40">
                 <div className="h-3 bg-foreground/20 rounded w-24 animate-pulse" />
-              </div>
-              {/* Action buttons skeleton */}
-              <div className="flex items-center justify-end gap-1 my-4 opacity-40">
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
+                <div className="w-7 h-7 bg-surface-hover rounded-lg animate-pulse" />
               </div>
             </div>
           </div>
@@ -59,20 +53,15 @@ export function ChatSkeleton() {
             </div>
   
             {/* AI response skeleton */}
-            <div className="group text-[15px] text-[#e8e8e8] mt-6">
-              <div className="prose prose-invert prose-sm max-w-none space-y-3">
-                <div className="h-5 bg-[#262626] rounded w-full animate-pulse" />
-                <div className="h-5 bg-[#262626] rounded w-full animate-pulse" />
-                <div className="h-5 bg-[#262626] rounded w-3/4 animate-pulse" />
+            <div className="group text-[15px] text-foreground mt-6">
+              <div className="space-y-3">
+                <div className="h-5 bg-surface-hover rounded w-full animate-pulse" />
+                <div className="h-5 bg-surface-hover rounded w-full animate-pulse" />
+                <div className="h-5 bg-surface-hover rounded w-3/4 animate-pulse" />
               </div>
-              <div className="text-xs text-foreground/40 mt-1 opacity-40">
+              <div className="flex items-center justify-between mt-1 opacity-40">
                 <div className="h-3 bg-foreground/20 rounded w-24 animate-pulse" />
-              </div>
-              <div className="flex items-center justify-end gap-1 my-4 opacity-40">
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
-                <div className="w-8 h-8 bg-[#262626] rounded-lg animate-pulse" />
+                <div className="w-7 h-7 bg-surface-hover rounded-lg animate-pulse" />
               </div>
             </div>
           </div>

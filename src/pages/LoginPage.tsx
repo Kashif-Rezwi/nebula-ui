@@ -34,7 +34,7 @@ export function LoginPage() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-[#1a1a1a] border border-border rounded-lg p-8 animate-fade-in">
+        <div className="bg-surface border border-border rounded-xl p-6 sm:p-8 animate-fade-in">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Error Message from server */}
             {error && (
@@ -59,7 +59,7 @@ export function LoginPage() {
                     message: VALIDATION.EMAIL.INVALID_MESSAGE,
                   },
                 })}
-                className="w-full bg-[#262626] text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full bg-surface-hover text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
                 disabled={isPending}
               />
               {errors.email && (
@@ -83,7 +83,7 @@ export function LoginPage() {
                     message: VALIDATION.PASSWORD.MIN_LENGTH_MESSAGE,
                   },
                 })}
-                className="w-full bg-[#262626] text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full bg-surface-hover text-foreground rounded-lg px-4 py-3 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
                 disabled={isPending}
               />
               {errors.password && (

@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-          <div className="max-w-md w-full bg-[#1a1a1a] border border-border rounded-lg p-8 text-center">
+          <div className="max-w-md w-full bg-surface border border-border rounded-xl p-6 sm:p-8 text-center">
             <div className="text-red-500 mb-4">
               <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <summary className="cursor-pointer text-sm text-foreground/60 hover:text-foreground">
                   Error details
                 </summary>
-                <pre className="mt-2 text-xs bg-[#262626] p-3 rounded overflow-auto max-h-40">
+                <pre className="mt-2 text-xs bg-surface-hover p-3 rounded overflow-auto max-h-40">
                   {this.state.error.toString()}
                 </pre>
               </details>

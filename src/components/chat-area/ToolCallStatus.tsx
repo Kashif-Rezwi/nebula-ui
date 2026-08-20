@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IoCheckmarkOutline, IoChevronDownOutline, IoCloseOutline } from 'react-icons/io5';
 import { type WebSearchSource, type SearchSummary } from '../../types';
 import { SourceCard } from './SourceCard';
 import { SearchSummary as SearchSummaryComponent } from './SearchSummary';
@@ -27,17 +28,9 @@ export function ToolCallStatus({
           <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
         );
       case 'success':
-        return (
-          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        );
+        return <IoCheckmarkOutline className="w-4 h-4 text-green-500" />;
       case 'error':
-        return (
-          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        );
+        return <IoCloseOutline className="w-4 h-4 text-red-500" />;
     }
   };
 
@@ -57,7 +50,7 @@ export function ToolCallStatus({
       {/* Tool Call Strip */}
       <button
         onClick={() => status === 'success' && setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-3 px-4 py-2.5 bg-[#1a1a1a] border border-border rounded-lg hover:border-primary/50 transition-smooth"
+        className="w-full flex items-center gap-3 px-4 py-2.5 bg-surface border border-border rounded-xl hover:border-primary/50 transition-smooth"
         disabled={status !== 'success'}
       >
         {/* Left: Icon + Status */}
@@ -79,7 +72,7 @@ export function ToolCallStatus({
               {sources.slice(0, 3).map((source, idx) => (
                 <div
                   key={idx}
-                  className="w-5 h-5 rounded bg-[#2a2a2a] border border-background flex items-center justify-center overflow-hidden"
+                  className="w-5 h-5 rounded bg-border border border-background flex items-center justify-center overflow-hidden"
                 >
                   {source.favicon ? (
                     <img src={source.favicon} alt="" className="w-4 h-4" />
@@ -91,21 +84,16 @@ export function ToolCallStatus({
             </div>
 
             {/* Dropdown icon */}
-            <svg
+            <IoChevronDownOutline
               className={`w-4 h-4 text-foreground/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            />
           </div>
         )}
       </button>
 
       {/* Error message */}
       {status === 'error' && error && (
-        <div className="mt-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+        <div className="mt-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
           <div className="text-sm text-red-500">{error}</div>
         </div>
       )}

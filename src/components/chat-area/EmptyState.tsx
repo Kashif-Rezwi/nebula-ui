@@ -37,7 +37,7 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img src="/dev-logo-light.png" alt="better DEV Logo" className="w-12 h-12 object-contain mr-3" />
-            <h2 className="text-3xl font-semibold">Welcome back!</h2>
+            <h2 className="text-2xl sm:text-3xl font-semibold">Welcome back!</h2>
           </div>
           <p className="text-foreground/60 text-lg">How can I help you today?</p>
         </div>
@@ -48,7 +48,7 @@ export function EmptyState({ onSuggestionClick }: EmptyStateProps) {
             <button
               key={suggestion.title}
               onClick={() => onSuggestionClick(suggestion.prompt)}
-              className="text-left p-4 rounded-xl bg-[#1a1a1a] border border-border hover:border-primary/50 transition-all hover:bg-[#202020] group"
+              className="text-left p-4 rounded-xl bg-surface border border-border hover:border-primary/50 transition-all hover:bg-surface-hover group"
             >
               <div className="text-sm font-medium mb-1 group-hover:text-primary transition-colors">
                 {suggestion.icon} {suggestion.title}

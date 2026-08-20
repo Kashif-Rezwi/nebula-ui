@@ -18,13 +18,13 @@ export function Greeting() {
   return (
     <div className="h-full flex items-center justify-center px-4">
       <div className="text-center">
-        <div className="flex items-center justify-center gap-4 mb-2">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-2">
           <img 
             src="/dev-logo-light.png" 
             alt="better DEV" 
-            className="w-10 h-10 object-contain"
+            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
           />
-          <h1 className="text-4xl font-light text-foreground/90">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-foreground/90">
             {getGreeting()}, {username}
           </h1>
         </div>

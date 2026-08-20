@@ -1,4 +1,4 @@
-import { IoDocumentTextOutline } from 'react-icons/io5';
+import { IoCloseOutline, IoDocumentTextOutline } from 'react-icons/io5';
 import type { Attachment } from '@/types';
 import { formatFileSize } from '@/lib/upload';
 
@@ -12,9 +12,9 @@ export function AttachmentPreview({ attachment, onRemove }: AttachmentPreviewPro
     const isImage = file.type.startsWith('image/');
 
     return (
-        <div className="relative inline-flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-3 min-w-[200px]">
+        <div className="relative inline-flex items-center gap-3 bg-surface border border-border rounded-xl p-3 w-full sm:w-auto sm:min-w-[200px]">
             {/* Thumbnail or Icon */}
-            <div className="relative flex-shrink-0 w-16 h-16 bg-[#2a2a2a] rounded border border-[#2a2a2a] flex items-center justify-center overflow-hidden">
+            <div className="relative flex-shrink-0 w-16 h-16 bg-border rounded border border-border flex items-center justify-center overflow-hidden">
                 {isImage ? (
                     <img
                         src={previewUrl}
@@ -35,7 +35,7 @@ export function AttachmentPreview({ attachment, onRemove }: AttachmentPreviewPro
 
             {/* File info */}
             <div className="flex-1 min-w-0">
-                <p className="text-sm text-white truncate" title={file.name}>
+                <p className="text-sm text-foreground/90 truncate" title={file.name}>
                     {file.name}
                 </p>
                 <p className="text-xs text-foreground/60">
@@ -46,10 +46,10 @@ export function AttachmentPreview({ attachment, onRemove }: AttachmentPreviewPro
                     <p className="text-xs text-blue-400 mt-1">Uploading...</p>
                 )}
                 {status === 'uploaded' && (
-                    <p className="text-xs text-green-400 mt-1">✓ Uploaded</p>
+                    <p className="text-xs text-green-500 mt-1">✓ Uploaded</p>
                 )}
                 {status === 'error' && (
-                    <p className="text-xs text-red-400 mt-1">{error || 'Upload failed'}</p>
+                    <p className="text-xs text-red-500 mt-1">{error || 'Upload failed'}</p>
                 )}
             </div>
 
@@ -57,22 +57,10 @@ export function AttachmentPreview({ attachment, onRemove }: AttachmentPreviewPro
             {status !== 'uploading' && (
                 <button
                     onClick={() => onRemove(id)}
-                    className="absolute top-2 right-2 text-foreground/40 hover:text-red-400 transition-colors"
+                    className="absolute top-2 right-2 text-foreground/40 hover:text-red-500 transition-colors"
                     title="Remove attachment"
                 >
-                    <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                        />
-                    </svg>
+                    <IoCloseOutline className="w-4 h-4" />
                 </button>
             )}
         </div>
