@@ -19,10 +19,44 @@ export function toUIMessage(msg: Message): UIMessage {
     }
 
     // 2. Strict checks on toolCalls existence
+    //
+    // NOTE: For modern messages the same tool calls are ALREADY stored as tool
+    // parts inside `msg.parts` (e.g. `tool-tavily_web_search`). `metadata.toolCalls`
+    // is a legacy/secondary index that also holds them. If we blindly append them
+    // here we duplicate the tool part, which made the web-search summary render
+    // twice inside a single assistant bubble. So we only add a metadata tool call
+    // when an equivalent tool part is NOT already present.
+    // Minimal shape needed to identify/dedupe tool parts without resorting to `any`
+    interface ToolPartLike {
+        type?: string;
+        args?: unknown;
+        input?: unknown;
+    }
+
+    const isToolPart = (p: ToolPartLike) => p && (p.type === 'dynamic-tool' || (typeof p.type === 'string' && p.type.startsWith('tool')));
+
+    // Stable signature so identical tool calls (parts vs metadata) collapse.
+    const toolKey = (part: ToolPartLike) => {
+        const type = part?.type || '';
+        const args = part?.args ?? part?.input;
+        let serialized = '';
+        if (args != null) {
+            try { serialized = JSON.stringify(args, Object.keys(args as Record<string, unknown>).sort()); } catch { serialized = ''; }
+        }
+        return `${type}:${serialized}`;
+    };
+
+    const existingToolKeys = new Set(parts.filter(isToolPart).map(toolKey));
+
     if (msg.metadata?.toolCalls && Array.isArray(msg.metadata.toolCalls)) {
         msg.metadata.toolCalls.forEach((toolCall) => {
+            // Skip metadata tool calls that are already present as parts
+            if (existingToolKeys.has(toolKey(toolCall))) {
+                return;
+            }
+
             // 3. Construct tool part cleanly
-            const toolPart: Record<string, any> = {
+            const toolPart: Record<string, unknown> = {
                 type: toolCall.type,
                 state: toolCall.state,
             };
@@ -45,6 +79,7 @@ export function toUIMessage(msg: Message): UIMessage {
             }
 
             parts.push(toolPart);
+            existingToolKeys.add(toolKey(toolCall));
         });
     }
 
