@@ -21,7 +21,7 @@
 * **Framework**: React 19.1.1 (Client-side rendered Single Page Application).
 * **Build Tool**: Vite 7.1.7 with TypeScript 5.9.3.
 * **Styling**: TailwindCSS v4 (`@tailwindcss/vite` plugin).
-* **Routing**: `react-router-dom` v7.9.4 (`BrowserRouter` with routes `/login`, `/register`, `/new`, `/chat/:conversationId`).
+* **Routing**: `react-router-dom` v7.9.4 (`BrowserRouter` with routes `/login`, `/register`, `/new`, `/chat/:conversationId`, and `/` redirecting to `/new`).
 * **State Management & Data Fetching**: `@tanstack/react-query` v5.90.3, `axios` v1.12.2.
 * **AI Streaming Integration**: AI SDK v5 (`@ai-sdk/react`, `ai`) consuming Server-Sent Events (SSE) via `DefaultChatTransport`.
 * **Output Directory**: `dist/`
@@ -100,6 +100,8 @@ The frontend repository interacts with the backend repository (`better-dev-api`)
    * `GET /chat/conversations/:id` — Conversation history.
    * `DELETE /chat/conversations/:id` — Delete conversation.
    * `POST /chat/conversations/:id/messages` — Real-time AI response stream (Server-Sent Events).
+   * `POST /chat/conversations/:id/generate-title` — Auto-generate conversation title (`src/lib/conversations.ts`).
+   * `PUT /chat/conversations/:id/system-prompt` — Update conversation system prompt (`src/lib/conversations.ts`).
    * `POST /attachments/upload` — Multipart form-data file upload.
 4. **Sequencing Dependency**:
    * The backend deployment on Render (`api.betterdev.in`) must be healthy and reachable before the frontend production user journeys can succeed.
