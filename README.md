@@ -152,100 +152,59 @@ better-dev-ui/
 │
 ├── src/
 │   ├── components/              # React components
-│   │   ├── actions-panel/       # Left sidebar components
-│   │   │   ├── ActionsPanel.tsx
-│   │   │   ├── Header.tsx
-│   │   │   ├── Features.tsx
-│   │   │   ├── Recents.tsx
-│   │   │   └── UserProfile.tsx
-│   │   │
-│   │   ├── activities-panel/    # Right sidebar components
-│   │   │   ├── ActivitiesPanel.tsx
-│   │   │   ├── SystemPromptCard.tsx
-│   │   │   └── SystemPromptModal.tsx
-│   │   │
-│   │   ├── chat-area/           # Main chat components
-│   │   │   ├── ChatArea.tsx
-│   │   │   ├── Composer.tsx
-│   │   │   ├── MessageList.tsx
-│   │   │   ├── MessageActions.tsx
-│   │   │   ├── ModeSelector.tsx       # Operational mode dropdown
-│   │   │   ├── ModeIndicator.tsx      # Mode badge display
-│   │   │   ├── ToolCallStatus.tsx
-│   │   │   ├── SourceCard.tsx
-│   │   │   ├── SearchSummary.tsx
-│   │   │   ├── ScrollToBottom.tsx
-│   │   │   ├── Greeting.tsx
-│   │   │   └── ChatSkeleton.tsx
-│   │   │
-│   │   ├── common/              # Shared components
-│   │   │   ├── ProtectedRoute.tsx
-│   │   │   ├── ErrorBoundary.tsx
-│   │   │   ├── Skeleton.tsx
-│   │   │   └── Toaster.tsx
-│   │   │
-│   │   └── ui/                  # UI primitives (Radix)
-│   │       ├── avatar.tsx
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── dialog.tsx
-│   │       ├── dropdown-menu.tsx
-│   │       ├── separator.tsx
-│   │       └── textarea.tsx
+│   │   ├── actions-panel/       # Left sidebar components (Recents, UserProfile, Features, Header)
+│   │   ├── activities-panel/    # Right sidebar components (SystemPromptCard, SystemPromptModal)
+│   │   ├── chat-area/           # Main chat components (ChatArea, Composer, MessageList, ModeSelector, etc.)
+│   │   ├── common/              # Shared components (Markdown, ProtectedRoute, ErrorBoundary, Skeleton, Toaster)
+│   │   └── ui/                  # UI primitives (Avatar, Button, Card, Dialog, DropdownMenu, Separator, Textarea)
+│   │
+│   ├── constants/               # Centralized configuration, routes, and validation rules
 │   │
 │   ├── hooks/                   # Custom React hooks
-│   │   ├── conversations/       # Conversation hooks
-│   │   │   ├── index.ts
-│   │   │   ├── keys.ts
-│   │   │   ├── useConversations.ts
-│   │   │   ├── useConversation.ts
-│   │   │   ├── useCreateConversationWithMessage.ts
-│   │   │   ├── useUpdateConversation.ts
-│   │   │   ├── useDeleteConversation.ts
-│   │   │   ├── useGenerateTitle.ts
-│   │   │   ├── useUpdateSystemPrompt.ts
-│   │   │   └── useUpdateOperationalMode.ts
-│   │   │
-│   │   ├── useAuth.ts
-│   │   ├── useConversationMode.ts  # Operational mode management
-│   │   ├── useConversationMessages.ts
-│   │   └── useScrollToMessage.ts
+│   │   ├── chat/                # useChatAttachments
+│   │   ├── conversations/       # useConversations, useConversation, useCreateConversationWithMessage, etc.
+│   │   ├── ui/                  # usePanelState
+│   │   ├── useAuth.ts           # useUser, useProfile, useLogin, useRegister, useLogout
+│   │   ├── useConversationMessages.ts # AI SDK v5 streaming & message integration
+│   │   ├── useModePreference.ts # Operational mode preference management
+│   │   └── useScrollToMessage.ts # Auto-scrolling utility
 │   │
-│   ├── lib/                     # Core libraries
-│   │   ├── api.ts              # Axios instance & interceptors
-│   │   ├── auth.ts             # Auth API methods
-│   │   ├── conversations.ts    # Conversations API methods
-│   │   ├── createChatTransport.ts  # AI SDK transport
-│   │   ├── queryClient.ts      # TanStack Query config
-│   │   └── utils.ts            # Utility functions
+│   ├── pages/                   # Lazy-loaded page components (ChatPage, LoginPage, RegisterPage)
 │   │
-│   ├── pages/                   # Page components
-│   │   ├── ChatPage.tsx
-│   │   ├── LoginPage.tsx
-│   │   └── RegisterPage.tsx
+│   ├── services/                # Pure API & network clients (No React dependencies)
+│   │   ├── api.ts              # Axios instance & typed interceptors
+│   │   ├── auth.service.ts     # Auth API methods
+│   │   ├── conversation.service.ts # Conversation API methods
+│   │   ├── upload.service.ts   # File upload & validation
+│   │   ├── chat-transport.service.ts # AI SDK SSE transport
+│   │   └── query-client.ts     # TanStack Query configuration
 │   │
-│   ├── types/                   # TypeScript types
+│   ├── types/                   # Strongly typed domain models
+│   │   ├── auth.ts
+│   │   ├── chat.ts
+│   │   ├── conversation.ts
 │   │   └── index.ts
 │   │
-│   ├── utils/                   # Utility functions
-│   │   ├── index.ts
-│   │   ├── toast.ts
-│   │   ├── conversationHelpers.ts
-│   │   └── optimisticUpdates.ts
+│   ├── utils/                   # Pure deterministic utility functions
+│   │   ├── cn.ts               # clsx + twMerge class merger
+│   │   ├── date.ts             # Date and relative time formatting
+│   │   ├── message.ts          # Backend <-> UI message transformations
+│   │   ├── storage.ts          # Safe localStorage wrapper
+│   │   ├── toast.ts            # Toast notifications wrapper
+│   │   ├── modePreference.ts   # Mode preference helpers
+│   │   ├── conversationHelpers.ts # Optimistic conversation generators
+│   │   └── optimisticUpdates.ts # Query cache update helpers
 │   │
-│   ├── constants/               # App constants
-│   │   └── index.ts
-│   │
-│   ├── App.tsx                  # Root component
-│   ├── main.tsx                 # Entry point
-│   └── index.css                # Global styles
+│   ├── App.tsx                  # Root route configuration with code-splitting
+│   ├── main.tsx                 # Application entry point
+│   └── index.css                # Tailwind v4 theme & global styles
 │
+├── ARCHITECTURE.md              # Engineering standards & architecture documentation
 ├── .env.example                 # Environment template
 ├── .gitignore
 ├── package.json
 ├── tsconfig.json
-├── vite.config.ts
-├── tailwind.config.js
+├── vite.config.ts               # Vite configuration with Rollup chunk splitting
 ├── vercel.json                  # Vercel deployment config
 └── README.md
 ```
