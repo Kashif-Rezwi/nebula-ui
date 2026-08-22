@@ -28,8 +28,8 @@
 
 Better DEV UI is a production-grade, multi-modal chat application designed for low-latency AI conversations. It features streaming text, tool-calling execution visualization, file and image drag-and-drop attachments, operational mode selectors, system prompt customizations, and optimistic UI mutations.
 
-- **Production URL**: [better-dev-ui-kashifrezwis-projects.vercel.app](https://better-dev-ui-kashifrezwis-projects.vercel.app)
-- **Backend API**: [better-dev-api (GitHub)](https://github.com/Kashif-Rezwi/better-dev-api) / [API Live Endpoint](https://better-dev-api.onrender.com)
+- **Production URL**: [better-dev-ui.vercel.app](https://better-dev-ui.vercel.app)
+- **Backend API**: [better-dev-api (GitHub)](https://github.com/Kashif-Rezwi/better-dev-api) / [API Health Endpoint](https://better-dev-api.onrender.com/health)
 
 ---
 
