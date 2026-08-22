@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -17,10 +17,18 @@ export default defineConfig({
     target: 'esnext',
     minify: 'esbuild',
     rollupOptions: {
-      external: [],
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-markdown': ['react-markdown', 'remark-gfm'],
+          'vendor-ai': ['@ai-sdk/react', 'ai'],
+          'vendor-icons': ['react-icons'],
+        },
+      },
     },
   },
   esbuild: {
     target: 'esnext',
   },
-})
+});

@@ -2,10 +2,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Victor+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @theme {
   /* Background colors */
   --color-background: #0f0f0f;
@@ -31,14 +27,18 @@
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
   
-  /* Border */
+  /* Border & Input */
   --color-border: #2a2a2a;
   --color-input: #2a2a2a;
   --color-ring: #f97316;
 
-  /* Surfaces */
+  /* Surfaces & Cards */
   --color-surface: #1a1a1a;
   --color-surface-hover: #262626;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #e8e8e8;
+  --color-popover: #1a1a1a;
+  --color-popover-foreground: #e8e8e8;
   
   /* Radius */
   --radius: 0.5rem;
@@ -183,7 +183,7 @@ body {
   color: #ffffff;
 }
 
-/* Code block wrapper (rendered by the shared Markdown component) */
+/* Code block wrapper */
 .code-block {
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid #2a2a2a;
@@ -207,7 +207,7 @@ body {
   border-radius: 0;
 }
 
-/* Muted prose variant (compact contexts like the Instructions card) */
+/* Muted prose variant */
 .prose.prose-muted {
   color: rgba(232, 232, 232, 0.4);
   font-size: 12px;
@@ -268,7 +268,6 @@ body {
   }
 }
 
-/* NEW ANIMATIONS FOR SOURCES CONTAINER */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -282,8 +281,6 @@ body {
   }
 }
 
-/* END NEW ANIMATIONS */
-
 /* Animation Classes */
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
@@ -293,12 +290,9 @@ body {
   animation: pulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ADD THESE NEW ANIMATION CLASSES */
 .animate-slide-down {
   animation: slideDown 0.3s ease-out forwards;
 }
-
-/* END NEW ANIMATION CLASSES */
 
 /* Smooth transitions for interactive elements */
 .transition-smooth {
