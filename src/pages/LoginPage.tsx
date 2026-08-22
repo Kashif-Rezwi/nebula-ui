@@ -6,7 +6,7 @@ import { VALIDATION, MESSAGES } from '../constants';
 
 export function LoginPage() {
   const { mutate: login, isPending, error } = useLogin();
-  
+
   const {
     register,
     handleSubmit,
@@ -23,9 +23,9 @@ export function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img 
-              src="/dev-logo-light.png" 
-              alt="better DEV Logo" 
+            <img
+              src="/dev-logo-light.png"
+              alt="better DEV Logo"
               className="w-10 h-10 object-contain mr-3"
             />
             <h1 className="text-3xl font-brand">better DEV</h1>
@@ -95,7 +95,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift"
+              className="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-3 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed btn-press hover-lift cursor-pointer"
             >
               {isPending ? MESSAGES.BUTTONS.SIGNING_IN : MESSAGES.BUTTONS.SIGN_IN}
             </button>
@@ -115,3 +115,5 @@ export function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;
