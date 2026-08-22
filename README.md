@@ -1,145 +1,65 @@
-# better DEV UI
+# Better DEV UI
 
-> Modern, real-time AI chat interface built with React 19, TypeScript, and AI SDK v5
+> Modern, real-time multi-modal AI chat interface built with React 19, TypeScript, Tailwind CSS v4, and Vercel AI SDK v5.
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-7.1-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-4.1-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![AI SDK](https://img.shields.io/badge/Vercel_AI_SDK-v5-black?style=flat&logo=vercel&logoColor=white)](https://sdk.vercel.ai/)
+
+---
 
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
-- [Prerequisites](#-prerequisites)
-- [Getting Started](#-getting-started)
 - [Project Structure](#-project-structure)
-- [Architecture](#-architecture)
-- [Development](#-development)
-- [Build & Deployment](#-build--deployment)
+- [Architecture & Data Flow](#-architecture--data-flow)
+- [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
-- [Key Features Deep Dive](#-key-features-deep-dive)
-- [Contributing](#-contributing)
+- [Development & Scripts](#-development--scripts)
+- [Deployment](#-deployment)
 
 ---
 
 ## 🌟 Overview
 
-Better DEV UI is a production-ready, modern chat interface for AI conversations. Built with the latest web technologies, it provides a seamless, real-time experience with streaming responses, tool visibility, and conversation management.
+Better DEV UI is a production-grade, multi-modal chat application designed for low-latency AI conversations. It features streaming text, tool-calling execution visualization, file and image drag-and-drop attachments, operational mode selectors, system prompt customizations, and optimistic UI mutations.
 
-**Live Demo:** [Your Frontend URL]
-
-**Backend Repository:** [better-dev-api](https://github.com/Kashif-Rezwi/better-dev-api)
+- **Production URL**: [better-dev-ui-kashifrezwis-projects.vercel.app](https://better-dev-ui-kashifrezwis-projects.vercel.app)
+- **Backend API**: [better-dev-api (GitHub)](https://github.com/Kashif-Rezwi/better-dev-api) / [API Live Endpoint](https://better-dev-api.onrender.com)
 
 ---
 
 ## ✨ Features
 
-### 🎨 **User Experience**
-- **Real-time Streaming** - See AI responses as they're generated with smooth animations
-- **Tool Call Visibility** - Watch the AI use tools like web search in real-time
-- **Dark Mode UI** - Beautiful, eye-friendly dark interface with orange accents
-- **Responsive Design** - Works perfectly on desktop, tablet, and mobile
-- **Smart Scrolling** - Auto-scroll to new messages with manual control
+### 🎨 User Experience & Design
+- **Real-Time SSE Streaming**: Token-by-token streaming with smooth markdown rendering and syntax highlighting.
+- **Tool Execution Visualization**: Visual status cards for autonomous tool calls (e.g., Tavily web search).
+- **Multi-Modal Attachments**: Drag-and-drop support for PDF documents, Word `.docx`, and images with upload progress tracking.
+- **Dark Mode UI**: Curated dark interface with custom semantic tokens and smooth animations.
+- **Smart Scroll Management**: Intelligent auto-scrolling that pauses when the user scrolls up to review history.
 
-### 💬 **Chat Features**
-- **Conversation Management** - Create, view, and delete conversations
-- **Operational Modes** - Control AI response style (Fast, Thinking, Auto)
-- **System Prompts** - Customize AI behavior per conversation
-- **Message History** - Persistent chat history with timestamps
-- **Auto-Title Generation** - AI generates conversation titles automatically
-- **Rich Markdown** - Full markdown support with code highlighting
-
-### 🔧 **Technical Features**
-- **Optimistic Updates** - Instant UI feedback before server response
-- **Smart Caching** - TanStack Query for efficient data management
-- **Error Boundaries** - Graceful error handling and recovery
-- **Type Safety** - Full TypeScript coverage
-- **State Management** - Clean, organized React hooks architecture
+### 💬 Conversational Power
+- **Operational Mode Switcher**: Seamlessly switch between **Fast** (low latency), **Thinking** (deep reasoning), and **Auto** (AI classified).
+- **System Prompt Customization**: Set custom persona instructions per conversation.
+- **Optimistic Mutations**: Instant UI updates on conversation renaming, creation, and deletion with TanStack Query cache rollback on error.
+- **Auto Title Generation**: AI auto-generates conversation titles in the background upon first message submission.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### **Core**
-- **React 19** - Latest React with concurrent features
-- **TypeScript 5.9** - Type-safe development
-- **Vite 7.1** - Lightning-fast dev server and builds
-
-### **UI & Styling**
-- **TailwindCSS 4.1** - Utility-first CSS framework
-- **Radix UI** - Accessible component primitives
-- **Shadcn UI patterns** - Pre-styled Radix components
-- **React Markdown** - Markdown rendering for chat messages
-- **Lucide React** - Beautiful icon library
-
-### **State Management**
-- **TanStack Query v5** - Server state management
-- **React Hook Form** - Form state and validation
-- **AI SDK v5** (Vercel) - Streaming AI responses
-
-### **API & Communication**
-- **Axios** - HTTP client with interceptors
-- **Server-Sent Events (SSE)** - Real-time streaming
-
-### **Development**
-- **ESLint** - Code linting
-- **TypeScript ESLint** - TypeScript-specific linting
-- **Sonner** - Toast notifications
-
----
-
-## 📦 Prerequisites
-
-- **Node.js** 20+ (LTS recommended)
-- **npm** or **yarn** or **pnpm**
-- **Backend API** running (see [better-dev-api](https://github.com/Kashif-Rezwi/better-dev-api))
-
----
-
-## 🚀 Getting Started
-
-### 1. **Clone the repository**
-```bash
-git clone https://github.com/Kashif-Rezwi/better-dev-ui.git
-cd better-dev-ui
-```
-
-### 2. **Install dependencies**
-```bash
-npm install
-```
-
-### 3. **Configure environment**
-```bash
-# Create .env file
-cp .env.example .env
-```
-
-Edit `.env`:
-```env
-# Vite Development Server Port
-VITE_CLIENT_PORT=3000
-
-# Backend API URL
-VITE_API_BASE_URL=http://localhost:3001
-# For production:
-# VITE_API_BASE_URL=https://your-backend-api.com
-```
-
-### 4. **Start development server**
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:3000`
-
-### 5. **Build for production**
-```bash
-npm run build
-npm run preview
-```
+| Layer | Technologies |
+| :--- | :--- |
+| **Core Framework** | React 19, TypeScript 5.9, Vite 7.1 |
+| **Styling & UI** | Tailwind CSS 4.1, Radix UI Primitives, Lucide Icons, Sonner |
+| **State & Cache** | TanStack Query v5, React Hook Form, Safe localStorage Wrapper |
+| **Streaming & AI** | Vercel AI SDK v5 (`DefaultChatTransport`, `useChat`) |
+| **Markdown Rendering** | `react-markdown`, `remark-gfm`, `rehype-highlight` |
+| **HTTP Client** | Axios with request/response authentication interceptors |
 
 ---
 
@@ -147,603 +67,138 @@ npm run preview
 
 ```
 better-dev-ui/
-├── public/                      # Static assets
-│   └── dev-logo-light.png      # App logo
+├── public/                      # Static assets & logos
+│   └── dev-logo-light.png
 │
 ├── src/
-│   ├── components/              # React components
-│   │   ├── actions-panel/       # Left sidebar components (Recents, UserProfile, Features, Header)
-│   │   ├── activities-panel/    # Right sidebar components (SystemPromptCard, SystemPromptModal)
-│   │   ├── chat-area/           # Main chat components (ChatArea, Composer, MessageList, ModeSelector, etc.)
-│   │   ├── common/              # Shared components (Markdown, ProtectedRoute, ErrorBoundary, Skeleton, Toaster)
-│   │   └── ui/                  # UI primitives (Avatar, Button, Card, Dialog, DropdownMenu, Separator, Textarea)
+│   ├── components/              # UI components
+│   │   ├── actions-panel/       # Left sidebar (Recents, UserProfile, Navigation)
+│   │   ├── activities-panel/    # Right sidebar (System prompt editor)
+│   │   ├── chat-area/           # Main chat interface (MessageList, Composer, ModeSelector)
+│   │   ├── common/              # Shared components (Markdown, ProtectedRoute, ErrorBoundary, Skeleton)
+│   │   └── ui/                  # Radix UI primitives (Button, Dialog, DropdownMenu, Avatar, Card)
 │   │
-│   ├── constants/               # Centralized configuration, routes, and validation rules
+│   ├── constants/               # API endpoints, storage keys, validation rules
 │   │
 │   ├── hooks/                   # Custom React hooks
 │   │   ├── chat/                # useChatAttachments
-│   │   ├── conversations/       # useConversations, useConversation, useCreateConversationWithMessage, etc.
+│   │   ├── conversations/       # React Query hooks for conversation CRUD & cache operations
 │   │   ├── ui/                  # usePanelState
-│   │   ├── useAuth.ts           # useUser, useProfile, useLogin, useRegister, useLogout
-│   │   ├── useConversationMessages.ts # AI SDK v5 streaming & message integration
-│   │   ├── useModePreference.ts # Operational mode preference management
-│   │   └── useScrollToMessage.ts # Auto-scrolling utility
+│   │   ├── useAuth.ts           # Authentication hooks
+│   │   ├── useConversationMessages.ts # AI SDK v5 integration
+│   │   ├── useModePreference.ts # Operational mode persistence
+│   │   └── useScrollToMessage.ts # Smooth scroll management
 │   │
-│   ├── pages/                   # Lazy-loaded page components (ChatPage, LoginPage, RegisterPage)
+│   ├── pages/                   # Route components (ChatPage, LoginPage, RegisterPage)
 │   │
-│   ├── services/                # Pure API & network clients (No React dependencies)
-│   │   ├── api.ts              # Axios instance & typed interceptors
-│   │   ├── auth.service.ts     # Auth API methods
-│   │   ├── conversation.service.ts # Conversation API methods
-│   │   ├── upload.service.ts   # File upload & validation
+│   ├── services/                # Pure TypeScript API services
+│   │   ├── api.ts               # Axios instance & token interceptors
+│   │   ├── auth.service.ts      # Auth endpoints
+│   │   ├── conversation.service.ts # Conversation CRUD & system prompt APIs
+│   │   ├── upload.service.ts    # File upload handling
 │   │   ├── chat-transport.service.ts # AI SDK SSE transport
-│   │   └── query-client.ts     # TanStack Query configuration
+│   │   └── query-client.ts      # TanStack Query client configuration
 │   │
-│   ├── types/                   # Strongly typed domain models
+│   ├── types/                   # Domain type definitions
 │   │   ├── auth.ts
 │   │   ├── chat.ts
 │   │   ├── conversation.ts
 │   │   └── index.ts
 │   │
-│   ├── utils/                   # Pure deterministic utility functions
-│   │   ├── cn.ts               # clsx + twMerge class merger
-│   │   ├── date.ts             # Date and relative time formatting
-│   │   ├── message.ts          # Backend <-> UI message transformations
-│   │   ├── storage.ts          # Safe localStorage wrapper
-│   │   ├── toast.ts            # Toast notifications wrapper
-│   │   ├── modePreference.ts   # Mode preference helpers
+│   ├── utils/                   # Pure utility functions
+│   │   ├── cn.ts                # Class merging (clsx + twMerge)
+│   │   ├── date.ts              # Relative time formatting
+│   │   ├── message.ts           # Message transformations
+│   │   ├── storage.ts           # Safe localStorage wrapper
+│   │   ├── toast.ts             # Toast helper
 │   │   ├── conversationHelpers.ts # Optimistic conversation generators
 │   │   └── optimisticUpdates.ts # Query cache update helpers
 │   │
-│   ├── App.tsx                  # Root route configuration with code-splitting
-│   ├── main.tsx                 # Application entry point
-│   └── index.css                # Tailwind v4 theme & global styles
+│   ├── App.tsx                  # Application route setup with code-splitting
+│   ├── main.tsx                 # React root entry point
+│   └── index.css                # Tailwind v4 theme & typography
 │
-├── ARCHITECTURE.md              # Engineering standards & architecture documentation
-├── .env.example                 # Environment template
-├── .gitignore
+├── ARCHITECTURE.md              # Engineering standards & guidelines
 ├── package.json
 ├── tsconfig.json
-├── vite.config.ts               # Vite configuration with Rollup chunk splitting
-├── vercel.json                  # Vercel deployment config
+├── vite.config.ts               # Vite configuration with chunk splitting
 └── README.md
 ```
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture & Data Flow
 
-### **Component Architecture**
+```mermaid
+graph TD
+    subgraph User_Action["User Action"]
+        Input["User types prompt & selects attachments"]
+    end
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                           App                               │
-│                      (BrowserRouter)                        │
-└────────────────────────────┬────────────────────────────────┘
-                             │
-                    ┌────────▼────────┐
-                    │  ProtectedRoute │
-                    │  (Auth Wrapper) │
-                    └────────┬────────┘
-                             │
-                ┌────────────▼────────────┐
-                │        ChatPage         │
-                │    (Layout Manager)     │
-                └─┬──────────┬──────────┬─┘
-                  │          │          │
-      ┌───────────▼───┐ ┌────▼───┐ ┌────▼──────────┐
-      │ ActionsPanel  │ │  Chat  │ │ Activities    │
-      │  (Left)       │ │  Area  │ │ Panel (Right) │
-      └───────────────┘ └────────┘ └───────────────┘
-```
+    subgraph React_State_Hooks["React Hooks & State"]
+        HookChat["useConversationMessages (AI SDK v5)"]
+        HookQuery["useConversations (TanStack Query)"]
+    end
 
-### **State Management Flow**
+    subgraph Network_Transport["Network Layer"]
+        SSE["chat-transport.service (SSE Streaming)"]
+        Axios["api.ts (Axios REST + JWT)"]
+    end
 
-```
-User Action
-    ↓
-React Hook (useAuth, useConversations, etc.)
-    ↓
-TanStack Query Mutation/Query
-    ↓
-API Call (Axios)
-    ↓
-Backend Response
-    ↓
-Optimistic Update (if applicable)
-    ↓
-Cache Update (TanStack Query)
-    ↓
-UI Re-render
-```
+    subgraph Backend_API["Better DEV API (NestJS)"]
+        ChatStream["POST /chat/conversations/:id/messages"]
+        UploadFile["POST /attachments/upload"]
+        CRUD["GET/PATCH/DELETE /chat/conversations"]
+    end
 
-### **Data Flow**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    User Interaction                         │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                ┌────────▼────────┐
-                │  React Hooks    │
-                │  (useAuth, etc) │
-                └────────┬────────┘
-                         │
-        ┌────────────────┴────────────────┐
-        │                                 │
-┌───────▼──────────┐         ┌────────────▼───────┐
-│  TanStack Query  │         │   Local State      │
-│  (Server State)  │         │   (UI State)       │
-└───────┬──────────┘         └────────────────────┘
-        │
-┌───────▼──────────┐
-│   API Layer      │
-│   (Axios)        │
-└───────┬──────────┘
-        │
-┌───────▼──────────┐
-│   Backend API    │
-│   (NestJS)       │
-└──────────────────┘
-```
-
-### **Streaming Architecture**
-
-```
-User sends message
-    ↓
-AI SDK v5 Transport
-    ↓
-Server-Sent Events (SSE) Connection
-    ↓
-Backend streams chunks
-    ↓
-Frontend receives events:
-    - text-delta (text chunks)
-    - tool-call-start (tool begins)
-    - tool-result (tool completes)
-    - finish (stream ends)
-    ↓
-UI updates in real-time
-    ↓
-Message saved to backend
+    Input --> HookChat
+    Input --> HookQuery
+    HookChat --> SSE --> ChatStream
+    HookQuery --> Axios --> CRUD
+    HookChat -.-> UploadFile
 ```
 
 ---
 
-## 💻 Development
-
-### **Available Scripts**
-
-```bash
-# Development
-npm run dev              # Start dev server with hot reload
-npm run preview          # Preview production build locally
-
-# Build
-npm run build            # Build for production
-
-# Linting
-npm run lint             # Run ESLint
-```
-
-### **Code Style**
-
-This project uses:
-- **ESLint** for code quality
-- **TypeScript** for type safety
-- **Prettier** (via ESLint) for formatting
-
-### **Component Guidelines**
-
-1. **Functional Components** - Use function components with hooks
-2. **TypeScript** - Always type props and state
-3. **Custom Hooks** - Extract logic into reusable hooks
-4. **Error Handling** - Use error boundaries for component errors
-5. **Loading States** - Show skeletons during data fetching
-6. **Optimistic Updates** - Update UI before server confirmation
-
-### **State Management Best Practices**
-
-```typescript
-// ✅ Good - Using TanStack Query for server state
-const { data: conversations, isLoading } = useConversations();
-
-// ❌ Bad - Using useState for server state
-const [conversations, setConversations] = useState([]);
-useEffect(() => {
-  fetchConversations().then(setConversations);
-}, []);
-
-// ✅ Good - Optimistic updates
-const { mutate: deleteConversation } = useDeleteConversation();
-
-// ❌ Bad - Manual state updates
-const deleteConversation = async (id) => {
-  setConversations(prev => prev.filter(c => c.id !== id));
-  await api.delete(`/conversations/${id}`);
-};
-```
-
-### **Folder Organization**
-
-- **`/components`** - Presentational components
-- **`/hooks`** - Custom React hooks (data fetching, logic)
-- **`/lib`** - Core libraries (API, auth, utils)
-- **`/pages`** - Page-level components
-- **`/types`** - TypeScript type definitions
-- **`/utils`** - Pure utility functions
-- **`/constants`** - App-wide constants
-
----
-
-## 🚢 Build & Deployment
-
-### **Build for Production**
-
-```bash
-npm run build
-```
-
-This creates an optimized production build in `dist/`:
-- Minified JavaScript
-- Optimized assets
-- Source maps for debugging
-
-### **Deploy to Vercel** (Recommended)
-
-1. **Push to GitHub**
-   ```bash
-   git push origin main
-   ```
-
-2. **Connect to Vercel**
-   - Go to [vercel.com](https://vercel.com)
-   - Import your repository
-   - Vercel auto-detects Vite configuration
-
-3. **Set Environment Variables**
-   ```
-   VITE_API_BASE_URL=https://better-dev-api.onrender.com
-   ```
-   *(Backend API hosted on Render — free tier; first request after ~15 min idle may take ~30–60s to cold-start.)*
-
-4. **Deploy**
-   - Vercel automatically deploys on every push
-   - Preview deployments for pull requests
-
-### **Deploy to Netlify**
-
-```bash
-# Build
-npm run build
-
-# Deploy
-netlify deploy --prod --dir=dist
-```
-
-### **Deploy to Custom Server**
-
-```bash
-# Build
-npm run build
-
-# Upload dist/ to your server
-scp -r dist/* user@server:/var/www/html/
-```
-
----
-
-## 🔐 Environment Variables
+## ⚙️ Environment Variables
 
 Create a `.env` file in the root directory:
 
 ```env
-# ============================================
-# VITE DEVELOPMENT SERVER
-# ============================================
+# Vite Client Port
 VITE_CLIENT_PORT=3000
 
-# ============================================
-# BACKEND API CONFIGURATION
-# ============================================
-# Local development
+# Backend API URL
 VITE_API_BASE_URL=http://localhost:3001
-
-# Production (Render-hosted backend — set in Vercel dashboard, not here)
+# For production:
 # VITE_API_BASE_URL=https://better-dev-api.onrender.com
 ```
 
-### **Environment Variable Naming**
+---
 
-⚠️ **Important:** All environment variables must be prefixed with `VITE_` to be accessible in the frontend.
+## 🚀 Getting Started
 
-```typescript
-// ✅ Correct - Will work
-const apiUrl = import.meta.env.VITE_API_BASE_URL;
+### 1. Clone & Install
+```bash
+git clone https://github.com/Kashif-Rezwi/better-dev-ui.git
+cd better-dev-ui
+npm install
+```
 
-// ❌ Incorrect - Will be undefined
-const apiUrl = import.meta.env.API_BASE_URL;
+### 2. Run Development Server
+```bash
+npm run dev
+```
+Open `http://localhost:3000` in your browser.
+
+### 3. Build & Preview Production Bundle
+```bash
+npm run build
+npm run preview
 ```
 
 ---
 
-## 🎯 Key Features Deep Dive
+## 🌐 Deployment
 
-### **1. Real-time Streaming**
-
-The app uses **AI SDK v5** for streaming AI responses:
-
-```typescript
-// src/hooks/useConversationMessages.ts
-const { messages, status, sendMessage } = useChat({
-  transport: createChatTransport(conversationId ?? 'default'),
-});
-
-// Streaming states: 'ready', 'streaming', 'error'
-```
-
-**How it works:**
-1. User sends message
-2. Backend starts streaming via Server-Sent Events (SSE)
-3. Frontend receives text chunks in real-time
-4. UI updates instantly as chunks arrive
-5. Stream completes, message saved
-
-### **2. Optimistic Updates**
-
-Instant UI feedback before server confirmation:
-
-```typescript
-// src/hooks/conversations/useDeleteConversation.ts
-onMutate: async (deletedId) => {
-  // Snapshot current state
-  const previous = queryClient.getQueryData(conversationKeys.lists());
-  
-  // Update UI immediately
-  queryClient.setQueryData(
-    conversationKeys.lists(),
-    (old) => old.filter(conv => conv.id !== deletedId)
-  );
-  
-  return { previous };
-},
-
-onError: (_, __, context) => {
-  // Rollback on error
-  queryClient.setQueryData(conversationKeys.lists(), context.previous);
-},
-```
-
-### **3. Tool Call Visibility**
-
-Watch AI use tools like web search in real-time:
-
-```typescript
-// Messages include tool call parts
-{
-  id: 'msg-123',
-  role: 'assistant',
-  parts: [
-    { type: 'text', text: 'Let me search for that...' },
-    { 
-      type: 'tool-tavily_web_search',
-      state: 'output-available',
-      output: { results: [...] }
-    },
-    { type: 'text', text: 'Based on my research...' }
-  ]
-}
-```
-
-**UI Features:**
-- Shows tool execution in progress
-- Displays search results with sources
-- Expandable source cards
-- Citation tracking
-
-### **4. Smart Caching**
-
-TanStack Query manages all server state:
-
-```typescript
-// src/lib/queryClient.ts
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,  // Fresh for 5 min
-      gcTime: 1000 * 60 * 10,     // Cache for 10 min
-      refetchOnWindowFocus: false, // Better UX
-    },
-  },
-});
-```
-
-**Benefits:**
-- Automatic caching
-- Background refetching
-- Optimistic updates
-- Request deduplication
-- Automatic retries
-
-### **5. Operational Modes**
-
-Control AI response behavior with three modes:
-
-```typescript
-// src/hooks/useConversationMode.ts
-const { currentMode, setMode } = useConversationMode(
-  conversationId,
-  conversation
-);
-
-// Mode included automatically in message requests
-// src/lib/createChatTransport.ts
-prepareSendMessagesRequest: ({ messages }) => {
-  const currentMode = localStorage.getItem(`conversation_mode_${conversationId}`);
-  return {
-    body: { 
-      messages,
-      ...(currentMode && { modeOverride: currentMode })
-    }
-  };
-}
-```
-
-**Available Modes:**
-- **Fast** ⚡ - Quick, concise responses for simple queries
-- **Thinking** 💡 - Detailed, comprehensive analysis for complex topics
-- **Auto** ✨ - AI automatically chooses the optimal mode
-
-**Key Features:**
-- **localStorage Persistence** - Modes survive page refresh and browser restart
-- **Zero Extra API Calls** - Mode sent with message request (50% fewer requests)
-- **Instant UI Updates** - No loading states or network latency
-- **Offline Support** - Mode selection works without network connection
-- **Safe Storage** - Graceful degradation if localStorage is disabled (Safari private mode)
-- **Visual Indicators** - Color-coded badges show mode for each message
-
-**Architecture Benefits:**
-```
-User selects mode → Saved to localStorage (instant)
-                   ↓
-              User sends message
-                   ↓
-        Mode included in request body
-                   ↓
-          Backend processes with mode
-                   ↓
-        Mode persisted on conversation
-```
-
-No separate mode update API call needed - improving performance and reducing server load.
-
-**Error Handling:**
-- Try-catch for localStorage failures
-- Fallback to server mode if local unavailable
-- Console warnings for debugging
-- Works in Safari private mode
-
-### **6. Auto-Scroll Behavior**
-
-Smart scrolling that doesn't interrupt reading:
-
-```typescript
-// src/hooks/useConversationMessages.ts
-useEffect(() => {
-  // Only auto-scroll for USER messages
-  if (messages.length > 0) {
-    const latestMessage = messages[messages.length - 1];
-    
-    if (latestMessage.role === 'user') {
-      scrollToMessage(latestMessage.id, { behavior: 'smooth' });
-    }
-  }
-}, [messages.length]);
-```
-
-**Features:**
-- Auto-scroll on new user messages
-- Manual scroll button when scrolled up
-- Scroll indicator during streaming
-- Smooth animations
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-### **Reporting Bugs**
-
-1. Check if bug already exists in [Issues](https://github.com/Kashif-Rezwi/better-dev-ui/issues)
-2. Create new issue with:
-   - Clear title
-   - Steps to reproduce
-   - Expected vs actual behavior
-   - Screenshots if applicable
-   - Browser/OS information
-
-### **Feature Requests**
-
-1. Open a new issue with `[Feature Request]` prefix
-2. Describe the feature and use case
-3. Explain why it would be valuable
-
-### **Pull Requests**
-
-1. Fork the repository
-2. Create a feature branch
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. Make your changes
-4. Write/update tests if applicable
-5. Commit with clear messages
-   ```bash
-   git commit -m 'feat: add amazing feature'
-   ```
-6. Push to your fork
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-7. Open a Pull Request
-
-### **Development Guidelines**
-
-- Follow existing code style
-- Use TypeScript for all new code
-- Write meaningful commit messages
-- Update documentation if needed
-- Test your changes locally
-- Keep PRs focused and small
-
-### **Commit Message Format**
-
-```
-feat: add user profile dropdown
-fix: resolve streaming connection issue
-docs: update README with new features
-style: format code with prettier
-refactor: extract message list logic to hook
-test: add tests for auth flow
-chore: update dependencies
-```
-
----
-
-## 📄 License
-
-This project is licensed under the **UNLICENSED** License.
-
----
-
-## 🙏 Acknowledgments
-
-- [React](https://react.dev/) - UI library
-- [Vite](https://vitejs.dev/) - Build tool
-- [TailwindCSS](https://tailwindcss.com/) - Styling
-- [TanStack Query](https://tanstack.com/query) - Data fetching
-- [AI SDK](https://sdk.vercel.ai/) - AI streaming
-- [Radix UI](https://www.radix-ui.com/) - UI primitives
-- [Shadcn UI](https://ui.shadcn.com/) - Component patterns and styling
-- [Vercel](https://vercel.com/) - Deployment platform
-
----
-
-## 📞 Support
-
-For questions or issues:
-- Open an [Issue](https://github.com/Kashif-Rezwi/better-dev-api/issues)
-- Contact: [GitHub Profile](https://github.com/Kashif-Rezwi)
-
----
-
-## 🗺️ Roadmap
-
-- [ ] **Image Upload** - Attach images to conversations
-- [ ] **Export Conversations** - Download as markdown/PDF
-
----
-
-**Built with ❤️ using ReactJS and TypeScript**
+The frontend is deployed to [Vercel](https://vercel.com) with automatic continuous deployment from the `main` branch. All single-page application routes are redirected to `index.html` via `vercel.json`.
