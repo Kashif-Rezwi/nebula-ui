@@ -23,7 +23,7 @@ export function useDeleteConversation() {
       // Optimistically remove from the list
       queryClient.setQueryData(
         conversationKeys.lists(),
-        (old: Conversation[] = []) => old.filter((conv) => conv.id !== deletedId)
+        (old: Conversation[] | undefined) => (Array.isArray(old) ? old.filter((conv) => conv.id !== deletedId) : [])
       );
 
       // Remove from cache

@@ -23,7 +23,8 @@ export function useGenerateTitle() {
       // Update conversations list cache
       queryClient.setQueryData(
         conversationKeys.lists(),
-        (old: Conversation[] = []) => {
+        (old: Conversation[] | undefined) => {
+          if (!Array.isArray(old)) return [];
           return old.map((conv) => (conv.id === conversationId ? { ...conv, title } : conv));
         }
       );

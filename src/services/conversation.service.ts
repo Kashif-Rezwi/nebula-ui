@@ -24,7 +24,10 @@ export const conversationService = {
   getConversations: async (): Promise<Conversation[]> => {
     try {
       const response = await api.get<Conversation[]>('/chat/conversations');
-      return response.data;
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      return [];
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }

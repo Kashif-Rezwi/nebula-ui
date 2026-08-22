@@ -16,7 +16,7 @@ export function addConversationOptimistically(
   // Add new conversation to the top of the list
   queryClient.setQueryData<Conversation[]>(
     conversationKeys.lists(),
-    (old = []) => [conversation, ...old]
+    (old) => (Array.isArray(old) ? [conversation, ...old] : [conversation])
   );
 
   return previousConversations;
@@ -29,10 +29,9 @@ export function replaceTempConversation(
 ): void {
   queryClient.setQueryData<Conversation[]>(
     conversationKeys.lists(),
-    (old = []) => {
-      return old.map(conv => 
-        isTempConversation(conv.id) ? realConversation : conv
-      );
+    (old) => {
+      if (!Array.isArray(old)) return [realConversation];
+      return old.map((conv) => (isTempConversation(conv.id) ? realConversation : conv));
     }
   );
 }
@@ -50,7 +49,7 @@ export function removeConversationOptimistically(
   // Remove conversation from list
   queryClient.setQueryData<Conversation[]>(
     conversationKeys.lists(),
-    (old = []) => old.filter(conv => conv.id !== conversationId)
+    (old) => (Array.isArray(old) ? old.filter((conv) => conv.id !== conversationId) : [])
   );
 
   return previousConversations;
@@ -61,7 +60,7 @@ export function rollbackConversations(
   queryClient: QueryClient,
   previousConversations?: Conversation[]
 ): void {
-  if (previousConversations) {
+  if (previousConversations && Array.isArray(previousConversations)) {
     queryClient.setQueryData(
       conversationKeys.lists(),
       previousConversations

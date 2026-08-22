@@ -34,7 +34,8 @@ export function useUpdateSystemPrompt() {
       // Optimistically update conversations list
       queryClient.setQueryData(
         conversationKeys.lists(),
-        (old: Conversation[] = []) => {
+        (old: Conversation[] | undefined) => {
+          if (!Array.isArray(old)) return [];
           return old.map((conv) => (conv.id === id ? { ...conv, systemPrompt } : conv));
         }
       );
@@ -47,7 +48,8 @@ export function useUpdateSystemPrompt() {
 
       queryClient.setQueryData(
         conversationKeys.lists(),
-        (old: Conversation[] = []) => {
+        (old: Conversation[] | undefined) => {
+          if (!Array.isArray(old)) return [updatedConversation];
           return old.map((conv) => (conv.id === id ? updatedConversation : conv));
         }
       );

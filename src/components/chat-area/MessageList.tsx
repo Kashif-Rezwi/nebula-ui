@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useMemo } from 'react';
 import { format } from '../../utils/date';
 import { getMessageText } from '../../utils/message';
 import { useUser } from '../../hooks/useAuth';
@@ -67,6 +67,7 @@ function parseToolOutput(output: unknown): {
 export function MessageList({ messages }: MessageListProps) {
   const { user } = useUser();
   const [dynamicPadding, setDynamicPadding] = useState(168);
+  const messageList = useMemo(() => (Array.isArray(messages) ? messages : []), [messages]);
 
   useLayoutEffect(() => {
     const calculatePadding = () => {
@@ -75,7 +76,7 @@ export function MessageList({ messages }: MessageListProps) {
       const composerHeight = composerEl ? composerEl.getBoundingClientRect().height : 148;
       const minPadding = composerHeight + 16;
 
-      if (!container || messages.length < 2) {
+      if (!container || messageList.length < 2) {
         setDynamicPadding(minPadding);
         return;
       }
@@ -112,7 +113,7 @@ export function MessageList({ messages }: MessageListProps) {
       observer.disconnect();
       window.removeEventListener('resize', calculatePadding);
     };
-  }, [messages]);
+  }, [messageList]);
 
   return (
     <div
@@ -120,14 +121,12 @@ export function MessageList({ messages }: MessageListProps) {
       className="max-w-3xl mx-auto px-4 pt-4"
       style={{ paddingBottom: `${dynamicPadding}px` }}
     >
-      {/* Messages */}
-      <div className="flex flex-col gap-6">
-        {messages.map((msg, index) => (
+      <div className="space-y-6">
+        {messageList.map((msg, index) => (
           <div
             key={msg.id}
             data-message-id={msg.id}
-            data-role={msg.role}
-            className={index === messages.length - 1 ? 'animate-fade-in' : ''}
+            className={index === messageList.length - 1 ? 'animate-fade-in' : ''}
           >
             {msg.role === 'user' ? (
               /* User Message */
