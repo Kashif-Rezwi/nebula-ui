@@ -1,28 +1,28 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { conversationsApi } from '../../lib/conversations';
+import { conversationService } from '../../services/conversation.service';
 import { toast } from '../../utils/toast';
 import { conversationKeys } from './keys';
 import type { Conversation, ConversationWithMessages } from '../../types';
 
-// Hook to update a conversation (e.g., title, system prompt)
-// Uses optimistic updates for better UX
 export function useUpdateConversation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Conversation> }) =>
-      conversationsApi.updateConversation(id, data),
+      conversationService.updateConversation(id, data),
 
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: conversationKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: conversationKeys.lists() });
 
-      // Snapshot the previous values
-      const previousConversation = queryClient.getQueryData(conversationKeys.detail(id));
-      const previousConversations = queryClient.getQueryData(conversationKeys.lists());
+      const previousConversation = queryClient.getQueryData<ConversationWithMessages>(
+        conversationKeys.detail(id)
+      );
+      const previousConversations = queryClient.getQueryData<Conversation[]>(
+        conversationKeys.lists()
+      );
 
-      // Optimistically update the conversation
+      // Optimistically update the conversation detail
       queryClient.setQueryData(
         conversationKeys.detail(id),
         (old: ConversationWithMessages | undefined) => {
@@ -35,9 +35,7 @@ export function useUpdateConversation() {
       queryClient.setQueryData(
         conversationKeys.lists(),
         (old: Conversation[] = []) => {
-          return old.map(conv => 
-            conv.id === id ? { ...conv, ...data } : conv
-          );
+          return old.map((conv) => (conv.id === id ? { ...conv, ...data } : conv));
         }
       );
 
@@ -45,7 +43,6 @@ export function useUpdateConversation() {
     },
 
     onError: (error: Error, { id }, context) => {
-      // Rollback on error
       if (context?.previousConversation) {
         queryClient.setQueryData(conversationKeys.detail(id), context.previousConversation);
       }
@@ -56,7 +53,6 @@ export function useUpdateConversation() {
     },
 
     onSettled: (_, __, { id }) => {
-      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: conversationKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: conversationKeys.lists() });
     },

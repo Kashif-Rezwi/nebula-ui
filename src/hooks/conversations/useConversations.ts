@@ -1,14 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { conversationsApi } from '../../lib/conversations';
+import { conversationService } from '../../services/conversation.service';
 import { conversationKeys } from './keys';
+import type { Conversation } from '../../types';
 
-// Hook to get all conversations for the current user
-// Returns conversations sorted by updatedAt (most recent first)
 export function useConversations() {
-  return useQuery({
+  return useQuery<Conversation[]>({
     queryKey: conversationKeys.lists(),
-    queryFn: conversationsApi.getConversations,
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    gcTime: 1000 * 60 * 10,   // Keep in cache for 10 minutes
+    queryFn: conversationService.getConversations,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10,   // 10 minutes
   });
 }

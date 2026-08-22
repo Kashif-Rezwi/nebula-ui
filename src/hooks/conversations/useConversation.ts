@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { conversationsApi } from '../../lib/conversations';
+import { conversationService } from '../../services/conversation.service';
 import { conversationKeys } from './keys';
+import type { ConversationWithMessages } from '../../types';
 
-// Hook to get a single conversation with all its messages
 export function useConversation(conversationId: string | undefined) {
-  return useQuery({
+  return useQuery<ConversationWithMessages>({
     queryKey: conversationKeys.detail(conversationId!),
-    queryFn: () => conversationsApi.getConversation(conversationId!),
-    enabled: !!conversationId,  // Only fetch if ID exists
-    staleTime: 1000 * 60 * 2,   // Consider fresh for 2 minutes
-    gcTime: 1000 * 60 * 5,      // Keep in cache for 5 minutes
+    queryFn: () => conversationService.getConversation(conversationId!),
+    enabled: Boolean(conversationId),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    gcTime: 1000 * 60 * 5,    // 5 minutes
   });
 }

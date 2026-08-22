@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useChat } from '@ai-sdk/react';
-import { conversationsApi } from '../lib/conversations';
-import { createChatTransport } from '../lib/createChatTransport';
+import { conversationService } from '../services/conversation.service';
+import { createChatTransport } from '../services/chat-transport.service';
 import { useGenerateTitle } from './conversations';
-import { toUIMessages } from '../lib/messageUtils';
-import type { UIMessage, ChatRouterState } from '../types';
+import { toUIMessages } from '../utils/message';
+import type { UIMessage, ChatRouterState, Attachment, MessagePart } from '../types';
 
 export function useConversationMessages(conversationId?: string) {
   const [loading, setLoading] = useState(false);
@@ -15,12 +15,30 @@ export function useConversationMessages(conversationId?: string) {
   const { mutateAsync: generateTitle } = useGenerateTitle();
   const location = useLocation();
 
-  // Use ref to prevent re-triggering
   const hasTriggeredRef = useRef(false);
 
   const { messages, status, error, setMessages, sendMessage } = useChat({
     transport: createChatTransport(conversationId ?? 'default'),
   });
+
+  const loadConversation = useCallback(async (id: string) => {
+    try {
+      setLoading(true);
+      const conversation = await conversationService.getConversation(id);
+      const uiMessages: UIMessage[] = toUIMessages(conversation.messages);
+
+      if (setMessages) {
+        setMessages(uiMessages as unknown as Parameters<typeof setMessages>[0]);
+      }
+    } catch (err) {
+      console.error('Failed to load conversation:', err);
+      if (setMessages) {
+        setMessages([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [setMessages]);
 
   // Reset trigger flag when conversation changes
   useEffect(() => {
@@ -30,20 +48,19 @@ export function useConversationMessages(conversationId?: string) {
   // Load conversation messages when conversationId changes
   useEffect(() => {
     if (conversationId) {
-      loadConversation();
+      loadConversation(conversationId);
     } else {
       if (setMessages) {
         setMessages([]);
       }
       setLoading(false);
     }
-  }, [conversationId]);
+  }, [conversationId, loadConversation, setMessages]);
 
-  // Simple auto-trigger with ref to prevent duplicates
+  // Auto-trigger assistant response when redirected from /new with a prompt
   useEffect(() => {
     const routerState = location.state as ChatRouterState | null;
 
-    // Only trigger once using ref
     if (
       routerState?.shouldAutoTrigger &&
       conversationId &&
@@ -53,147 +70,114 @@ export function useConversationMessages(conversationId?: string) {
       messages[0].role === 'user' &&
       !hasTriggeredRef.current
     ) {
-      // Mark as triggered
       hasTriggeredRef.current = true;
-
-      // Clear the flag
       window.history.replaceState({}, document.title);
 
-      // Trigger AI response by sending the user message
       const userMessage = messages[0];
-      const messageText = userMessage.parts
-        .filter(part => part.type === 'text')
-        .map(part => part.text)
+      const messageText = (userMessage.parts || [])
+        .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
+        .map((part) => part.text)
         .join('');
 
-      // This prevents the duplicate
       if (setMessages && sendMessage) {
-        // Temporarily clear messages
         setMessages([]);
 
-        // Use setTimeout to ensure state update completes
         setTimeout(() => {
-          // Now send - no duplicate because array is empty!
           sendMessage({
             role: 'user',
             parts: [{ type: 'text', text: messageText }],
-          } as any);
+          } as unknown as Parameters<typeof sendMessage>[0]);
         }, 0);
       }
 
-      // Generate title
       generateTitle({ conversationId, message: messageText });
     }
-  }, [conversationId, loading, status, messages.length, location.state]);
-  // Only depend on messages.length, not messages array itself
+  }, [
+    conversationId,
+    loading,
+    status,
+    messages,
+    location.state,
+    setMessages,
+    sendMessage,
+    generateTitle,
+  ]);
 
-  const loadConversation = async () => {
-    if (!conversationId) return;
-
-    try {
-      setLoading(true);
-      const conversation = await conversationsApi.getConversation(conversationId);
-
-      const uiMessages: UIMessage[] = toUIMessages(conversation.messages);
-
-      if (setMessages) {
-        setMessages(uiMessages as any);
-      }
-    } catch (error) {
-      console.error('Failed to load conversation:', error);
-      if (setMessages) {
-        setMessages([]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const scrollToBottomSmooth = () => {
+  const scrollToBottomSmooth = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const isScrolledUp = element.scrollHeight - element.scrollTop - element.clientHeight > 100;
     setShowScrollButton(isScrolledUp);
-  };
+  }, []);
 
-  const handleSendMessage = async (
-    messageText: string,
-    attachments: import('@/types').Attachment[] = []
-  ) => {
-    if ((!messageText.trim() && attachments.length === 0) || !conversationId || status !== 'ready') {
-      return;
-    }
+  const handleSendMessage = useCallback(
+    async (messageText: string, attachments: Attachment[] = []) => {
+      if ((!messageText.trim() && attachments.length === 0) || !conversationId || status !== 'ready') {
+        return;
+      }
 
-    try {
-      if (sendMessage) {
-        // Build parts array for multi-modal message (consistent with architecture)
-        const parts: any[] = [];
+      try {
+        if (sendMessage) {
+          const parts: MessagePart[] = [];
 
-        // Add text part (even if empty, to maintain structure)
-        if (messageText.trim()) {
-          parts.push({ type: 'text', text: messageText });
-        }
+          if (messageText.trim()) {
+            parts.push({ type: 'text', text: messageText });
+          }
 
-        // Add image/file parts from uploaded attachments
-        for (const att of attachments) {
-          if (att.status === 'uploaded') {
-            if (att.type === 'image') {
-              // Convert image to Base64 as per "Key Constraints" in Integration Guide
-              try {
-                const base64 = await new Promise<string>((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(att.file);
-                  reader.onload = () => resolve(reader.result as string);
-                  reader.onerror = reject;
-                });
-                
-                parts.push({
-                  type: 'image',
-                  image: base64, // Must be Base64 as per guide
-                  ...(att.attachmentId && { attachmentId: att.attachmentId }), // Optional: Link to Attachment entity
-                });
-              } catch (e) {
-                console.error('Failed to convert image to base64:', e);
-              }
-            } else if (att.type === 'file' && att.attachmentId) {
-                // Determine file type for UI
+          for (const att of attachments) {
+            if (att.status === 'uploaded') {
+              if (att.type === 'image') {
+                try {
+                  const base64 = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(att.file);
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                  });
+
+                  parts.push({
+                    type: 'image',
+                    image: base64,
+                    ...(att.attachmentId ? { attachmentId: att.attachmentId } : {}),
+                  });
+                } catch (e) {
+                  console.error('Failed to convert image to base64:', e);
+                }
+              } else if (att.type === 'file' && att.attachmentId) {
                 const isPdf = att.file.type === 'application/pdf' || att.file.name.endsWith('.pdf');
-                
                 parts.push({
-                    type: 'file',
-                    text: att.file.name,
-                    attachmentId: att.attachmentId,
-                    fileType: isPdf ? 'pdf' : 'docx'
+                  type: 'file',
+                  text: att.file.name,
+                  attachmentId: att.attachmentId,
+                  fileType: isPdf ? 'pdf' : 'docx',
                 });
+              }
             }
           }
+
+          if (parts.length === 0) {
+            parts.push({ type: 'text', text: '' });
+          }
+
+          sendMessage({
+            role: 'user',
+            parts,
+          } as unknown as Parameters<typeof sendMessage>[0]);
         }
 
-        // Ensure at least one part exists
-        if (parts.length === 0) {
-          parts.push({ type: 'text', text: '' });
+        if (messages.length === 0) {
+          await generateTitle({ conversationId, message: messageText });
         }
-
-        // AI SDK v5 UIMessage uses ONLY 'parts', no 'content' field
-        sendMessage({
-          role: 'user',
-          parts: parts,
-        } as any);
+      } catch (error) {
+        console.error('Failed to send message:', error);
+        throw error;
       }
-
-      // Generate title if first message
-      if (messages.length === 0) {
-        await generateTitle({ conversationId, message: messageText });
-      }
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      // Re-throw for ChatArea to handle
-      throw error;
-    }
-  };
+    },
+    [conversationId, status, sendMessage, messages.length, generateTitle]
+  );
 
   return {
     messages,

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../lib/api';
+import { conversationService } from '../../services/conversation.service';
 import { toast } from '../../utils/toast';
 import { conversationKeys } from './keys';
 import {
@@ -12,32 +12,18 @@ import {
   rollbackConversations,
   preCacheConversationDetail,
 } from '../../utils/optimisticUpdates';
-
-interface CreateConversationWithMessageParams {
-  title?: string;
-  firstMessage: string;
-  systemPrompt?: string;
-}
-
-interface CreateConversationResponse {
-  id: string;
-  title: string;
-  systemPrompt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { CreateConversationParams, CreateConversationResponse } from '../../types';
 
 export function useCreateConversationWithMessage() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (params: CreateConversationWithMessageParams): Promise<CreateConversationResponse> => {
-      const response = await api.post<CreateConversationResponse>(
-        '/chat/conversations/with-message',
-        params
-      );
-      return response.data;
-    },
+  return useMutation<
+    CreateConversationResponse,
+    Error,
+    CreateConversationParams,
+    { previousConversations: unknown }
+  >({
+    mutationFn: (params) => conversationService.createConversationWithMessage(params),
 
     onMutate: async (params) => {
       // Cancel outgoing refetches
@@ -59,7 +45,6 @@ export function useCreateConversationWithMessage() {
     },
 
     onSuccess: (data) => {
-      // Create real conversation from API response
       const realConversation = createConversationFromResponse(data);
 
       // Replace temp with real conversation
@@ -70,8 +55,10 @@ export function useCreateConversationWithMessage() {
     },
 
     onError: (error: Error, _, context) => {
-      // Rollback to previous state
-      rollbackConversations(queryClient, context?.previousConversations);
+      rollbackConversations(
+        queryClient,
+        context?.previousConversations as import('../../types').Conversation[] | undefined
+      );
       toast.error(error.message || 'Failed to create conversation');
     },
   });

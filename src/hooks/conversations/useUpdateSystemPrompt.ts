@@ -1,26 +1,26 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { conversationsApi } from '../../lib/conversations';
+import { conversationService } from '../../services/conversation.service';
 import { toast } from '../../utils/toast';
 import { conversationKeys } from './keys';
 import type { Conversation, ConversationWithMessages } from '../../types';
 
-// Hook to update the system prompt for a conversation
-// Uses optimistic updates for better UX
 export function useUpdateSystemPrompt() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, systemPrompt }: { id: string; systemPrompt: string }) =>
-      conversationsApi.updateSystemPrompt(id, systemPrompt),
-    
+      conversationService.updateSystemPrompt(id, systemPrompt),
+
     onMutate: async ({ id, systemPrompt }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: conversationKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: conversationKeys.lists() });
 
-      // Snapshot previous values
-      const previousConversation = queryClient.getQueryData(conversationKeys.detail(id));
-      const previousConversations = queryClient.getQueryData(conversationKeys.lists());
+      const previousConversation = queryClient.getQueryData<ConversationWithMessages>(
+        conversationKeys.detail(id)
+      );
+      const previousConversations = queryClient.getQueryData<Conversation[]>(
+        conversationKeys.lists()
+      );
 
       // Optimistically update conversation detail
       queryClient.setQueryData(
@@ -35,33 +35,27 @@ export function useUpdateSystemPrompt() {
       queryClient.setQueryData(
         conversationKeys.lists(),
         (old: Conversation[] = []) => {
-          return old.map((conv) =>
-            conv.id === id ? { ...conv, systemPrompt } : conv
-          );
+          return old.map((conv) => (conv.id === id ? { ...conv, systemPrompt } : conv));
         }
       );
 
       return { previousConversation, previousConversations };
     },
-    
+
     onSuccess: (updatedConversation, { id }) => {
-      // Update with real data from server
       queryClient.setQueryData(conversationKeys.detail(id), updatedConversation);
-      
+
       queryClient.setQueryData(
         conversationKeys.lists(),
         (old: Conversation[] = []) => {
-          return old.map((conv) =>
-            conv.id === id ? updatedConversation : conv
-          );
+          return old.map((conv) => (conv.id === id ? updatedConversation : conv));
         }
       );
-      
+
       toast.success('Instructions updated');
     },
-    
+
     onError: (error: Error, { id }, context) => {
-      // Rollback on error
       if (context?.previousConversation) {
         queryClient.setQueryData(conversationKeys.detail(id), context.previousConversation);
       }
@@ -70,9 +64,8 @@ export function useUpdateSystemPrompt() {
       }
       toast.error(error.message || 'Failed to update instructions');
     },
-    
+
     onSettled: (_, __, { id }) => {
-      // Refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: conversationKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: conversationKeys.lists() });
     },
