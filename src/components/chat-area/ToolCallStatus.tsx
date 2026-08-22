@@ -1,26 +1,26 @@
 import { useState } from 'react';
 import { IoCheckmarkOutline, IoChevronDownOutline, IoCloseOutline } from 'react-icons/io5';
-import { type WebSearchSource, type SearchSummary } from '../../types';
+import type { WebSearchSource, SearchSummary } from '../../types';
 import { SourceCard } from './SourceCard';
 import { SearchSummary as SearchSummaryComponent } from './SearchSummary';
 
 interface ToolCallStatusProps {
-  toolName: string;
+  toolName?: string;
   status: 'pending' | 'success' | 'error';
   sources?: WebSearchSource[];
   summary?: SearchSummary;
   error?: string;
 }
 
-export function ToolCallStatus({ 
-//   toolName, 
-  status, 
+export function ToolCallStatus({
+  toolName = 'Web Search',
+  status,
   sources = [],
   summary,
-  error 
+  error,
 }: ToolCallStatusProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const getStatusIcon = () => {
     switch (status) {
       case 'pending':
@@ -45,19 +45,21 @@ export function ToolCallStatus({
     }
   };
 
+  const displayName = toolName === 'tavily_web_search' ? 'Web Search' : toolName;
+
   return (
     <div className="my-4">
       {/* Tool Call Strip */}
       <button
         onClick={() => status === 'success' && setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-3 px-4 py-2.5 bg-surface border border-border rounded-xl hover:border-primary/50 transition-smooth"
+        className="w-full flex items-center gap-3 px-4 py-2.5 bg-surface border border-border rounded-xl hover:border-primary/50 transition-smooth cursor-pointer"
         disabled={status !== 'success'}
       >
         {/* Left: Icon + Status */}
         <div className="flex items-center gap-2 flex-1">
           {getStatusIcon()}
           <span className="text-sm font-medium text-foreground/90">
-            Web Search
+            {displayName}
           </span>
           <span className="text-xs text-foreground/60">
             {getStatusText()}
@@ -67,7 +69,6 @@ export function ToolCallStatus({
         {/* Right: Source icons + dropdown */}
         {status === 'success' && sources.length > 0 && (
           <div className="flex items-center gap-2">
-            {/* Source favicons */}
             <div className="flex -space-x-2">
               {sources.slice(0, 3).map((source, idx) => (
                 <div
@@ -83,7 +84,6 @@ export function ToolCallStatus({
               ))}
             </div>
 
-            {/* Dropdown icon */}
             <IoChevronDownOutline
               className={`w-4 h-4 text-foreground/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             />
@@ -98,7 +98,7 @@ export function ToolCallStatus({
         </div>
       )}
 
-      {/* Sources Container - Slides down from tool strip */}
+      {/* Sources Container */}
       {status === 'success' && isExpanded && sources.length > 0 && (
         <div className="mt-2 space-y-2 overflow-hidden animate-slide-down">
           <div className="text-xs text-foreground/60 font-medium px-1">All Sources:</div>
@@ -110,7 +110,7 @@ export function ToolCallStatus({
         </div>
       )}
 
-      {/* Summary - Moves down smoothly when sources expand */}
+      {/* Summary */}
       {status === 'success' && summary && sources.length > 0 && (
         <div className="transition-all duration-300 ease-out">
           <SearchSummaryComponent summary={summary} sources={sources} />

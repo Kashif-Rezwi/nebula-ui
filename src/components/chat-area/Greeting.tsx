@@ -1,10 +1,9 @@
-import { useAuth } from '../../hooks/useAuth';
+import { useUser } from '../../hooks/useAuth';
 import { format } from '../../utils';
 
 export function Greeting() {
-  const { getUser } = useAuth();
-  const user = getUser();
-  
+  const { user } = useUser();
+
   // Get greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -19,9 +18,9 @@ export function Greeting() {
     <div className="h-full flex items-center justify-center px-4">
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 sm:gap-4 mb-2">
-          <img 
-            src="/dev-logo-light.png" 
-            alt="better DEV" 
+          <img
+            src="/dev-logo-light.png"
+            alt="better DEV"
             className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
           />
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-foreground/90">

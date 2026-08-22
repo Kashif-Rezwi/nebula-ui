@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogFooter,
@@ -7,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
+  DialogClose,
 } from '../ui/dialog';
-import { IoPencil } from "react-icons/io5";
+import { IoPencil } from 'react-icons/io5';
 import { Button } from '../ui/button';
 import type { SystemPromptModalProps } from '@/types';
 import { Separator } from '../ui/separator';
@@ -19,13 +19,20 @@ export function SystemPromptModal({
   initialInstructions,
   onSave,
   isSaving = false,
-  isDraft = false
+  isDraft = false,
 }: SystemPromptModalProps) {
+  const [open, setOpen] = useState(false);
   const [instructions, setInstructions] = useState(initialInstructions);
   const maxInputLength = 2000;
 
+  // Keep state in sync with external instructions changes
+  useEffect(() => {
+    setInstructions(initialInstructions);
+  }, [initialInstructions, open]);
+
   const handleSave = () => {
     onSave(instructions.trim());
+    setOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -37,7 +44,7 @@ export function SystemPromptModal({
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
           className="w-7 h-7 rounded-lg bg-surface-hover/80 flex items-center justify-center text-foreground/70 hover:text-foreground hover:bg-surface-hover transition-smooth cursor-pointer"
@@ -75,19 +82,19 @@ export function SystemPromptModal({
             <div className="text-sm text-foreground/60">
               {instructions.length} / {maxInputLength} characters
             </div>
-            <DialogClose asChild>
-              <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
+              <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
-                <Button
-                  type="submit"
-                  className='bg-primary/80'
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : isDraft ? 'Set for New Chat' : 'Save changes'}
-                </Button>
-              </div>
-            </DialogClose>
+              </DialogClose>
+              <Button
+                type="submit"
+                className="bg-primary/80"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : isDraft ? 'Set for New Chat' : 'Save changes'}
+              </Button>
+            </div>
           </div>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,6 @@
 import { IoDocumentTextOutline } from 'react-icons/io5';
 import { Markdown } from '../common/Markdown';
-import type { UIMessage } from '../../types';
+import type { UIMessage, TextPart, ImagePart, FilePart } from '../../types';
 
 interface MessageContentProps {
   message: UIMessage;
@@ -8,7 +8,7 @@ interface MessageContentProps {
 }
 
 export function MessageContent({ message, variant }: MessageContentProps) {
-  const parts = (message as any).parts || [];
+  const parts = message.parts || [];
   const partsToRender = Array.isArray(parts) && parts.length > 0 ? parts : [];
 
   if (partsToRender.length === 0) {
@@ -17,23 +17,29 @@ export function MessageContent({ message, variant }: MessageContentProps) {
 
   return (
     <>
-      {partsToRender.map((part: any, idx: number) => {
+      {partsToRender.map((part, idx) => {
         // Text part
         if (part.type === 'text') {
+          const textPart = part as TextPart;
           return variant === 'user' ? (
             <div key={idx} className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
-              {part.text}
+              {textPart.text}
             </div>
           ) : (
             <div key={idx} className="prose max-w-none">
-              <Markdown>{part.text}</Markdown>
+              <Markdown>{textPart.text}</Markdown>
             </div>
           );
         }
 
         // Image part
         if (part.type === 'image') {
-          const imageUrl = part.url || part.image;
+          const imagePart = part as ImagePart;
+          const imageUrl =
+            typeof imagePart.image === 'string'
+              ? imagePart.image
+              : imagePart.url || (imagePart.image instanceof URL ? imagePart.image.toString() : '');
+
           return (
             <div key={idx} className={variant === 'assistant' ? 'my-3' : ''}>
               <img
@@ -57,6 +63,7 @@ export function MessageContent({ message, variant }: MessageContentProps) {
 
         // File part
         if (part.type === 'file') {
+          const filePart = part as FilePart;
           return (
             <div
               key={idx}
@@ -66,10 +73,10 @@ export function MessageContent({ message, variant }: MessageContentProps) {
                 <IoDocumentTextOutline className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate" title={part.text}>
-                  {part.text}
+                <p className="text-sm font-medium text-foreground truncate" title={filePart.text}>
+                  {filePart.text}
                 </p>
-                <p className="text-xs text-foreground/60 uppercase">{part.fileType || 'DOC'}</p>
+                <p className="text-xs text-foreground/60 uppercase">{filePart.fileType || 'DOC'}</p>
               </div>
             </div>
           );

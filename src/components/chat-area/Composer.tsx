@@ -5,7 +5,7 @@ import { AttachmentPreview } from './AttachmentPreview';
 import { useModePreference } from '../../hooks/useModePreference';
 import type { Attachment } from '@/types';
 
-interface InputAreaProps {
+interface ComposerProps {
   message: string;
   setMessage: (value: string) => void;
   onSend: () => void;
@@ -14,7 +14,6 @@ interface InputAreaProps {
   isStreaming?: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   showModeSelector?: boolean;
-  // Attachment props
   attachments?: Attachment[];
   onAttachmentAdd?: (file: File) => void;
   onAttachmentRemove?: (id: string) => void;
@@ -34,25 +33,23 @@ export function Composer({
   onAttachmentAdd,
   onAttachmentRemove,
   isUploading = false,
-}: InputAreaProps) {
-  // Use centralized mode preference hook
+}: ComposerProps) {
   const { mode: selectedMode, setMode: setSelectedMode } = useModePreference();
-
-  // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Callback ref that focuses whenever the element is attached/updated
-  const callbackRef = useCallback((node: HTMLTextAreaElement | null) => {
-    if (node) node.focus();
-
-    // Also assign to the forwarded ref
-    if (textareaRef && 'current' in textareaRef) {
-      (textareaRef as React.RefObject<HTMLTextAreaElement | null>).current = node;
-    };
-  }, [isStreaming, disabled, textareaRef]);
-
-  // Handle drag and drop
   const [isDragging, setIsDragging] = useState(false);
+
+  const callbackRef = useCallback(
+    (node: HTMLTextAreaElement | null) => {
+      if (node) {
+        node.focus();
+      }
+
+      if (textareaRef && 'current' in textareaRef) {
+        (textareaRef as React.RefObject<HTMLTextAreaElement | null>).current = node;
+      }
+    },
+    [textareaRef]
+  );
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -72,22 +69,19 @@ export function Composer({
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      // Handle multiple files
-      Array.from(e.dataTransfer.files).forEach(file => {
+      Array.from(e.dataTransfer.files).forEach((file) => {
         if (onAttachmentAdd) {
-            onAttachmentAdd(file);
+          onAttachmentAdd(file);
         }
       });
     }
   };
 
-  // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && onAttachmentAdd) {
       onAttachmentAdd(file);
     }
-    // Reset input so same file can be selected again
     e.target.value = '';
   };
 
@@ -102,11 +96,8 @@ export function Composer({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          {/* Wrapper with opacity transition - maintains dimensions */}
-          <div
-            className="transition-opacity duration-300 opacity-100 pointer-events-auto"
-          >
-            {/* Attachment Previews - Show only if attachments exist */}
+          <div className="transition-opacity duration-300 opacity-100 pointer-events-auto">
+            {/* Attachment Previews */}
             {attachments.length > 0 && (
               <div className="p-4 pb-0">
                 <div className="flex flex-wrap gap-2">
@@ -114,7 +105,7 @@ export function Composer({
                     <AttachmentPreview
                       key={attachment.id}
                       attachment={attachment}
-                      onRemove={onAttachmentRemove || (() => { })}
+                      onRemove={onAttachmentRemove || (() => {})}
                     />
                   ))}
                 </div>
@@ -140,11 +131,10 @@ export function Composer({
               />
             </div>
 
-            {/* Action Section - Bottom Section */}
+            {/* Action Section */}
             <div className="flex items-center justify-between px-4 pb-4">
-              {/* Left Side - 2 Buttons */}
+              {/* Left Side: Attach File */}
               <div className="flex items-center gap-2">
-                {/* Hidden file input */}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -153,20 +143,19 @@ export function Composer({
                   onChange={handleFileChange}
                 />
 
-                {/* Attach Button */}
                 <button
+                  type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading || disabled}
-                  className="w-8 h-8 rounded-lg border border-border hover:bg-surface-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="w-8 h-8 rounded-lg border border-border hover:bg-surface-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
                   title="Attach file (Image, PDF, DOCX)"
                 >
                   <IoAttachOutline className="w-5 h-5 text-foreground/80" />
                 </button>
               </div>
 
-              {/* Right Side - 2 Buttons */}
+              {/* Right Side: Mode Selector + Send */}
               <div className="flex items-center gap-2">
-                {/* Mode Selector */}
                 {showModeSelector && (
                   <ModeSelector
                     currentMode={selectedMode}
@@ -175,10 +164,10 @@ export function Composer({
                   />
                 )}
 
-                {/* Send Button */}
                 <button
+                  type="button"
                   onClick={onSend}
-                  className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
                   disabled={(!message.trim() && attachments.length === 0) || isStreaming || disabled}
                   title="Send message"
                 >

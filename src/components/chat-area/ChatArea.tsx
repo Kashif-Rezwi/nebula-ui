@@ -8,12 +8,11 @@ import { MessageList } from './MessageList';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useCreateConversationWithMessage } from '../../hooks/conversations';
 import { useScrollToMessage } from '../../hooks/useScrollToMessage';
-import type { UIMessage, ChatRouterState, ChatAreaProps, Attachment } from '@/types';
+import { useChatAttachments } from '../../hooks/chat/useChatAttachments';
+import type { UIMessage, ChatRouterState, ChatAreaProps } from '@/types';
 import { ROUTES } from '../../constants';
-import { validateFile, uploadAttachment } from '@/lib/upload';
 import { toast } from '@/utils/toast';
-
-import { cn } from '../../lib/utils';
+import { cn } from '../../utils/cn';
 
 export function ChatArea({
   conversationId,
@@ -21,16 +20,22 @@ export function ChatArea({
   draftSystemPrompt,
   onDraftSystemPromptChange,
   isLeftPanelCollapsed = false,
-  isRightPanelCollapsed = false
+  isRightPanelCollapsed = false,
 }: ChatAreaProps) {
   const [message, setMessage] = useState('');
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
   const prevMessagesLengthRef = useRef(0);
 
-  const MAX_ATTACHMENTS = 5; // Max 5 attachments per message
+  const {
+    attachments,
+    isUploading,
+    handleAttachmentAdd,
+    handleAttachmentRemove,
+    clearAttachments,
+    hasUploadingAttachments,
+    hasFailedAttachments,
+  } = useChatAttachments(conversationId);
 
   const {
     messages,
@@ -44,38 +49,31 @@ export function ChatArea({
     handleSendMessage,
   } = useConversationMessages(conversationId);
 
-  // Add scroll-to-message functionality
   const { scrollToMessage } = useScrollToMessage(messagesContainerRef as RefObject<HTMLDivElement>);
 
-  // Automatically scroll to new USER messages only (not AI responses)
+  // Automatically scroll to new user messages
   useEffect(() => {
-    // Skip if no messages or still loading
     if (messages.length === 0 || loading) {
       return;
     }
 
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-    // Check if a new message was added
     if (messages.length > prevMessagesLengthRef.current) {
       const latestMessage = messages[messages.length - 1];
 
-      // ONLY scroll if the latest message is from the USER
       if (latestMessage.role === 'user') {
-        // Wait a bit for the DOM to update, then scroll to the new message
         timeoutId = setTimeout(() => {
           scrollToMessage(latestMessage.id, {
-            offset: 16, // 16px from top of viewport
-            behavior: 'smooth'
+            offset: 16,
+            behavior: 'smooth',
           });
-        }, 800);
+        }, 400);
       }
     }
 
-    // Update previous length
     prevMessagesLengthRef.current = messages.length;
 
-    // Cancel the pending scroll if the effect re-runs or the component unmounts
     return () => {
       if (timeoutId !== undefined) {
         clearTimeout(timeoutId);
@@ -86,123 +84,16 @@ export function ChatArea({
   const { mutateAsync: createConversationWithMessage, isPending: isCreating } =
     useCreateConversationWithMessage();
 
-  // Attachment handlers
-  const handleAttachmentAdd = async (file: File) => {
-    // Check if conversation exists
-    if (!conversationId) {
-      toast.error('Please create a conversation first before uploading files');
-      return;
-    }
-
-    // Check limit
-    if (attachments.length >= MAX_ATTACHMENTS) {
-      toast.error(`Maximum ${MAX_ATTACHMENTS} files per message`);
-      return;
-    }
-
-    // Validate
-    const validation = validateFile(file);
-    if (!validation.valid) {
-      toast.error(validation.error);
-      return;
-    }
-
-    // Create attachment object
-    const attachment: Attachment = {
-      id: crypto.randomUUID(),
-      file,
-      previewUrl: URL.createObjectURL(file),
-      status: 'uploading',
-      progress: 0,
-      type: file.type.startsWith('image/') ? 'image' : 'file',
-    };
-
-    setAttachments(prev => [...prev, attachment]);
-    setIsUploading(true);
-
-    try {
-      // Upload to server with conversationId
-      const { url: uploadedUrl, attachmentId } = await uploadAttachment(file, conversationId, (progress) => {
-        setAttachments(prev =>
-          prev.map(att =>
-            att.id === attachment.id
-              ? { ...att, progress }
-              : att
-          )
-        );
-      });
-
-      // Update with URL and attachment ID
-      setAttachments(prev =>
-        prev.map(att =>
-          att.id === attachment.id
-            ? { ...att, uploadedUrl, attachmentId, status: 'uploaded' as const }
-            : att
-        )
-      );
-      toast.success('File uploaded successfully');
-    } catch (error) {
-      // Mark as error
-      setAttachments(prev =>
-        prev.map(att =>
-          att.id === attachment.id
-            ? { ...att, status: 'error' as const, error: error instanceof Error ? error.message : 'Upload failed' }
-            : att
-        )
-      );
-      toast.error('Failed to upload file');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleAttachmentRemove = (id: string) => {
-    setAttachments(prev => {
-      const removed = prev.find(att => att.id === id);
-      if (removed) {
-        // Clean up blob URL to prevent memory leaks
-        URL.revokeObjectURL(removed.previewUrl);
-      }
-      return prev.filter(att => att.id !== id);
-    });
-  };
-
-  // Keep a live ref of the attachments so the unmount cleanup below can revoke
-  // the CURRENT blob URLs. Using `attachments` directly in a `[]`-deps cleanup
-  // would capture the initial (empty) array and leak every preview URL.
-  const attachmentsRef = useRef<Attachment[]>([]);
-  useEffect(() => {
-    attachmentsRef.current = attachments;
-  }, [attachments]);
-
-  // Cleanup blob URLs on unmount to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      attachmentsRef.current.forEach(att => URL.revokeObjectURL(att.previewUrl));
-    };
-  }, []);
-
-  // Mode management is now message-level, handled in Composer
-
   const handleSend = async () => {
     if (!message.trim() && attachments.length === 0) return;
 
-    // Don't allow sending with uploading attachments
-    if (attachments.some(att => att.status === 'uploading')) {
+    if (hasUploadingAttachments) {
       toast.error('Please wait for upload to complete');
       return;
     }
 
-    // Don't allow sending with failed attachments
-    if (attachments.some(att => att.status === 'error')) {
+    if (hasFailedAttachments) {
       toast.error('Please remove failed uploads before sending');
-      return;
-    }
-
-    // Ensure all uploaded attachments have valid URLs
-    const uploadedAttachments = attachments.filter(att => att.status === 'uploaded');
-    if (uploadedAttachments.some(att => !att.uploadedUrl)) {
-      toast.error('Some uploads are not ready yet. Please wait.');
       return;
     }
 
@@ -210,9 +101,8 @@ export function ChatArea({
     const messageAttachments = [...attachments];
 
     setMessage('');
-    setAttachments([]); // Clear immediately
+    clearAttachments();
 
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -226,10 +116,8 @@ export function ChatArea({
           systemPrompt: draftSystemPrompt || undefined,
         });
 
-        // Clear draft system prompt after successful creation
         onDraftSystemPromptChange?.('');
 
-        // Navigate with state flag to trigger AI response
         navigate(ROUTES.CHAT_WITH_ID(result.id), {
           state: { shouldAutoTrigger: true } as ChatRouterState,
         });
@@ -237,15 +125,9 @@ export function ChatArea({
         // At /chat/:id - Send message with attachments
         await handleSendMessage(messageText, messageAttachments);
       }
-
-      // Success — the sent message references uploaded URLs/base64, so the
-      // composer preview blob URLs are no longer needed. Release them.
-      messageAttachments.forEach(att => URL.revokeObjectURL(att.previewUrl));
     } catch (error) {
       console.error('Failed to send message:', error);
-      // Restore message and attachments on error
       setMessage(messageText);
-      setAttachments(messageAttachments);
     }
   };
 
@@ -263,33 +145,18 @@ export function ChatArea({
 
   return (
     <main className="w-full h-full flex flex-col">
-      {/* Scrollable content. Horizontal offsets reserve space for the static
-          side panels (left panel at lg+, right panel at xl+) so the title,
-          messages and composer always center within the free area and never
-          slide underneath the floating panels. Offsets drop away when a panel
-          is collapsed, letting the content expand into the freed space.
-          288px = panel (left-4 + w-64) + 16px gap. */}
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
         className={cn(
-          "flex-1 overflow-y-auto",
-          !isLeftPanelCollapsed && "lg:pl-[288px]",
-          !isRightPanelCollapsed && "xl:pr-[288px]"
+          'flex-1 overflow-y-auto',
+          !isLeftPanelCollapsed && 'lg:pl-[288px]',
+          !isRightPanelCollapsed && 'xl:pr-[288px]'
         )}
       >
-        {/* Sticky chat title - mirrors the composer treatment: a solid background with a
-            downward fade, so messages slide under it and fade out at the top of the chat.
-            Centered to the message column (max-w-3xl) to avoid overlapping the sidebars
-            and the mobile drawer toggles. */}
+        {/* Sticky chat title */}
         {hasConversation && (
           <div className="sticky top-0 z-20 w-full max-w-3xl mx-auto">
-            {/* Vertical position aligns with the sidebar brand text (desktop) / the
-                drawer toggles (mobile): container top-4 + toggle center at 20px.
-                Horizontal padding keeps the title clear of the floating drawer
-                toggles: both toggles below lg (panels are drawers), only the
-                right toggle at lg-xl (left panel is static, space already reserved
-                by the scroll container offset), none at xl+. */}
             <div className="bg-background pt-4 lg:pt-[34px] pb-2 pl-20 pr-20 lg:pl-4 lg:pr-20 xl:pr-4">
               <div className="flex h-10 lg:h-7 items-center">
                 <h1
@@ -300,7 +167,6 @@ export function ChatArea({
                 </h1>
               </div>
             </div>
-            {/* Fade below the title so content scrolling under it fades out like the composer */}
             <div className="h-6 bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none" />
           </div>
         )}
@@ -330,10 +196,8 @@ export function ChatArea({
           </div>
         )}
 
-        {/* At /chat/:id - Loading */}
-        {hasConversation && loading && (
-          <ChatSkeleton />
-        )}
+        {/* At /chat/:id - Loading skeleton */}
+        {hasConversation && loading && <ChatSkeleton />}
 
         {/* At /chat/:id - Loaded but no messages */}
         {hasConversation && !loading && !hasMessages && (
@@ -363,9 +227,7 @@ export function ChatArea({
         {/* At /chat/:id - Has messages */}
         {hasConversation && !loading && hasMessages && (
           <>
-            <MessageList
-              messages={messages as UIMessage[]}
-            />
+            <MessageList messages={messages as UIMessage[]} />
             <div ref={messagesEndRef} />
           </>
         )}
@@ -375,14 +237,12 @@ export function ChatArea({
       {hasConversation && (
         <div
           className={cn(
-            "fixed bottom-0 left-0 right-0",
-            !isLeftPanelCollapsed && "lg:left-[288px]",
-            !isRightPanelCollapsed && "xl:right-[288px]"
+            'fixed bottom-0 left-0 right-0',
+            !isLeftPanelCollapsed && 'lg:left-[288px]',
+            !isRightPanelCollapsed && 'xl:right-[288px]'
           )}
           data-chat-composer
         >
-          {/* Decorative background fade above the composer. Never intercepts clicks,
-              otherwise it would cover the copy button of the last message. */}
           <div className="absolute h-[calc(100%-58px)] bottom-0 left-0 right-0 bg-background pointer-events-none" />
 
           <ScrollToBottom
